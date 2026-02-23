@@ -1,0 +1,71 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: expenses_postgres
+    environment:
+      POSTGRES_DB: expenses
+      POSTGRES_USER: expenses
+      POSTGRES_PASSWORD: expenses
+    ports:
+      - "15432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U expenses -d expenses"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: expenses_backend
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_KEY: base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+      APP_URL: http://localhost:18000
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: expenses
+      DB_USERNAME: expenses
+      DB_PASSWORD: expenses
+      SANCTUM_STATEFUL_DOMAINS: localhost:15173
+      SESSION_DOMAIN: localhost
+      FRONTEND_URL: http://localhost:15173
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - default
+      - traefik_proxy
+    ports:
+      - "18000:8000"
+    volumes:
+      - ./backend:/app-overlay
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: /expenses/api
+        VITE_BASE_PATH: /expenses/
+    container_name: expenses_frontend
+    depends_on:
+      - backend
+    networks:
+      - default
+      - traefik_proxy
+    ports:
+      - "15173:80"
+
+volumes:
+  postgres_data:
+
+networks:
+  traefik_proxy:
+    external: true
+    name: shop-online_web

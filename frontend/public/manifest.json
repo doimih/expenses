@@ -1,0 +1,26 @@
+{
+  "id": "/expenses/",
+  "name": "Expenses Manager",
+  "short_name": "Expenses",
+  "description": "Personal expenses manager",
+  "scope": "/expenses/",
+  "start_url": "/expenses/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "/expenses/icon.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/expenses/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
