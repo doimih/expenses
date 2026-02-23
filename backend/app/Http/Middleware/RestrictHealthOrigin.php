@@ -10,7 +10,7 @@ class RestrictHealthOrigin
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (! $request->is('expenses/health')) {
+        if (! $request->is('health')) {
             return $next($request);
         }
 

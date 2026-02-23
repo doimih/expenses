@@ -1,257 +1,211 @@
-# Expenses Manager (Laravel API + React PWA + PostgreSQL + Docker)
+# Expenses Manager
 
-## 1) Structura finală proiect
+Expenses Manager is a Dockerized full-stack app for personal/team expense tracking, with token-based auth, category management, monthly reports, and a PWA frontend.
+
+## Dev Stack
+
+### Backend
+- **PHP 8.3** (`php:8.3-cli`)
+- **Laravel** (fresh install in container, customized app code overlaid from `backend/`)
+- **Laravel Sanctum** for API token authentication
+- **PostgreSQL driver** (`pdo_pgsql`)
+
+### Frontend
+- **React 18**
+- **Vite 6**
+- **Tailwind CSS 3** + PostCSS + Autoprefixer
+- **Axios** for API calls
+- **React Router 7**
+- **Chart.js 4** + `react-chartjs-2`
+
+### Infrastructure / Runtime
+- **Docker Compose** (multi-service orchestration)
+- **PostgreSQL 16** (`postgres:16-alpine`)
+- **Nginx 1.27** (frontend static serving)
+- Optional public exposure via **Traefik** (external network: `shop-online_web`)
+
+## Architecture
+
+### Services
+- `postgres` → database container
+- `backend` → Laravel API, runs migrations on startup
+- `frontend` → Vite build output served by Nginx
+
+### Default Local Ports
+- Frontend: `http://localhost:15173`
+- Backend API: `http://localhost:18000`
+- PostgreSQL: `localhost:15432`
+
+### Public Path (if Traefik is enabled)
+- Frontend/API base path: `https://projects.doimih.net/expenses`
+- Health endpoint: `https://projects.doimih.net/expenses/health`
+
+## Project Structure
 
 ```text
 expenses/
 ├── docker-compose.yml
-├── README.md
 ├── backend/
 │   ├── Dockerfile
 │   ├── entrypoint.sh
 │   ├── app/
-│   │   ├── Http/
-│   │   │   ├── Controllers/Api/
-│   │   │   │   ├── AuthController.php
-│   │   │   │   ├── CategoryController.php
-│   │   │   │   ├── ExpenseController.php
-│   │   │   │   └── ReportController.php
-│   │   │   └── Requests/
-│   │   │       ├── CategoryRequest.php
-│   │   │       ├── ExpenseRequest.php
-│   │   │       ├── LoginRequest.php
-│   │   │       └── RegisterRequest.php
+│   │   ├── Http/Controllers/Api/
+│   │   ├── Http/Middleware/
+│   │   ├── Http/Requests/
 │   │   ├── Models/
-│   │   │   ├── Category.php
-│   │   │   ├── Expense.php
-│   │   │   └── User.php
 │   │   └── Services/
-│   │       └── MonthlyReportService.php
+│   ├── bootstrap/
 │   ├── config/
-│   │   └── cors.php
-│   ├── database/
-│   │   └── migrations/
-│   │       ├── 2026_02_22_000000_create_users_table.php
-│   │       ├── 2026_02_22_000100_create_categories_table.php
-│   │       └── 2026_02_22_000200_create_expenses_table.php
+│   ├── database/migrations/
 │   └── routes/
-│       └── api.php
 └── frontend/
     ├── Dockerfile
+    ├── nginx.conf
     ├── package.json
-    ├── index.html
-    ├── vite.config.js
-    ├── tailwind.config.js
-    ├── postcss.config.js
     ├── public/
-    │   ├── manifest.json
-    │   ├── sw.js
-    │   └── icon.svg
     └── src/
-        ├── App.jsx
-        ├── main.jsx
-        ├── index.css
-        ├── hooks/
-        │   └── useAuth.js
-        ├── services/
-        │   └── api.js
-        ├── pages/
-        │   ├── Login.jsx
-        │   ├── Categories.jsx
-        │   ├── Expenses.jsx
-        │   └── Dashboard.jsx
-        └── components/charts/
-            ├── PieChart.jsx
-            ├── BarChart.jsx
-            └── LineChart.jsx
 ```
 
-## 2) Rulare proiect
+## Quick Start
+
+### Prerequisites
+- Docker + Docker Compose
+- (Optional for Traefik routing) external Docker network `shop-online_web`
+
+### Run all services
 
 ```bash
 docker compose up --build
 ```
 
-- API Laravel: `http://localhost:18000`
-- Frontend React PWA: `http://localhost:15173`
-- Public via Traefik: `https://projects.doimih.net/expenses`
+### Stop services
 
-## 3) API Routes (Laravel)
+```bash
+docker compose down
+```
 
-### Monitoring
-- `GET /expenses/health`
-- Endpoint public: `https://projects.doimih.net/expenses/health`
-- Restricție acces: doar request-uri cu `Origin: https://projects.doimih.net`
+### Stop and remove DB volume
+
+```bash
+docker compose down -v
+```
+
+## Environment Notes
+
+- Backend `.env` is auto-created from `.env.example` in `entrypoint.sh`.
+- `APP_KEY` is auto-generated at startup when missing or placeholder.
+- Migrations run automatically on container start: `php artisan migrate --force`.
+- Frontend build args are set in `docker-compose.yml`:
+  - `VITE_API_URL=/expenses/api`
+  - `VITE_BASE_PATH=/expenses/`
+
+## API Overview
+
+Base path locally: `http://localhost:18000/api`
+
+### Health
+- `GET /health`
+
+> Health requests are restricted by middleware and require `Origin: https://projects.doimih.net` when that rule is active.
 
 ### Auth
 - `POST /api/auth/register`
 - `POST /api/auth/login`
-- `GET /api/auth/me` (auth:sanctum)
-- `GET /api/auth/tokens` (auth:sanctum)
-- `POST /api/auth/logout` (auth:sanctum)
-- `POST /api/auth/logout-all` (auth:sanctum)
+- `GET /api/auth/me` *(auth:sanctum)*
+- `GET /api/auth/tokens` *(auth:sanctum)*
+- `POST /api/auth/logout` *(auth:sanctum)*
+- `POST /api/auth/logout-all` *(auth:sanctum)*
 
-### Categories (auth:sanctum)
+### Categories *(auth:sanctum)*
 - `GET /api/categories`
 - `POST /api/categories`
 - `GET /api/categories/{id}`
 - `PUT /api/categories/{id}`
 - `DELETE /api/categories/{id}`
 
-### Expenses (auth:sanctum)
+### Expenses *(auth:sanctum)*
 - `GET /api/expenses?month=YYYY-MM`
 - `POST /api/expenses`
 - `GET /api/expenses/{id}`
 - `PUT /api/expenses/{id}`
 - `DELETE /api/expenses/{id}`
 
-### Reports (auth:sanctum)
+### Reports *(auth:sanctum)*
 - `GET /api/reports/monthly?month=YYYY-MM`
 
-## 4) Exemple JSON API
+### User Management *(superadmin only, auth:sanctum)*
+- `GET /api/users`
+- `POST /api/users`
+- `PUT /api/users/{user}/password`
+- `PATCH /api/users/{user}/superadmin`
 
-### Register
-`POST /api/auth/register`
+## Authentication
 
-```json
-{
-  "name": "Demo User",
-  "email": "demo@expenses.com",
-  "password": "password",
-  "password_confirmation": "password",
-  "device_name": "pwa-ios"
-}
+The API uses Bearer tokens issued by Sanctum.
+
+1. Call `POST /api/auth/login` or `POST /api/auth/register`
+2. Read `token` from response
+3. Send header:
+
+```http
+Authorization: Bearer <token>
+Accept: application/json
 ```
 
-Răspuns:
+The frontend stores the token in `localStorage` and injects it via Axios request interceptor.
 
-```json
-{
-  "token": "1|xxxxxxxxxxxxxxxx",
-  "token_type": "Bearer",
-  "user": {
-    "id": 1,
-    "name": "Demo User",
-    "email": "demo@expenses.com"
-  }
-}
-```
-
-### Create Category
-`POST /api/categories`
-
-```json
-{
-  "name": "Food",
-  "color": "#22C55E"
-}
-```
-
-Răspuns:
-
-```json
-{
-  "id": 1,
-  "user_id": 1,
-  "name": "Food",
-  "color": "#22C55E",
-  "created_at": "2026-02-22T10:00:00.000000Z",
-  "updated_at": "2026-02-22T10:00:00.000000Z"
-}
-```
-
-### Create Expense
-`POST /api/expenses`
-
-```json
-{
-  "category_id": 1,
-  "amount": 120.5,
-  "description": "Groceries",
-  "date": "2026-02-22"
-}
-```
-
-Răspuns:
-
-```json
-{
-  "id": 10,
-  "user_id": 1,
-  "category_id": 1,
-  "amount": "120.50",
-  "description": "Groceries",
-  "date": "2026-02-22",
-  "category": {
-    "id": 1,
-    "name": "Food",
-    "color": "#22C55E"
-  }
-}
-```
-
-### Monthly Report
-`GET /api/reports/monthly?month=2026-02`
-
-```json
-{
-  "month": "2026-02",
-  "total": 1450.75,
-  "by_category": [
-    { "id": 1, "name": "Food", "color": "#22C55E", "total": 620.25 },
-    { "id": 2, "name": "Transport", "color": "#F59E0B", "total": 330.0 }
-  ],
-  "charts": {
-    "pie": {
-      "labels": ["Food", "Transport"],
-      "datasets": [
-        {
-          "label": "Distribuție categorii",
-          "data": [620.25, 330.0],
-          "backgroundColor": ["#22C55E", "#F59E0B"]
-        }
-      ]
-    },
-    "bar": {
-      "labels": ["2025-09", "2025-10", "2025-11", "2025-12", "2026-01", "2026-02"],
-      "datasets": [
-        {
-          "label": "Total pe luni",
-          "data": [910.0, 1020.3, 1200.0, 1310.5, 1400.2, 1450.75],
-          "backgroundColor": "#6366F1"
-        }
-      ]
-    },
-    "line": {
-      "labels": ["2026-02-01", "2026-02-02", "2026-02-03"],
-      "datasets": [
-        {
-          "label": "Evoluție zilnică",
-          "data": [40.0, 12.5, 90.0],
-          "borderColor": "#0EA5E9",
-          "backgroundColor": "rgba(14,165,233,0.2)",
-          "fill": true,
-          "tension": 0.35
-        }
-      ]
-    }
-  }
-}
-```
-
-## 5) PWA
+## PWA Notes
 
 - Manifest: `frontend/public/manifest.json`
 - Service Worker: `frontend/public/sw.js`
-- Registration: `frontend/src/main.jsx`
-- iOS install: Safari -> Share -> Add to Home Screen
+- App includes cache reset action in UI (header button)
+- iOS install: Safari → Share → Add to Home Screen
 
-## 6) Optimizări recomandate (senior)
+## Frontend Pages
 
-1. Activează `php artisan config:cache` și `route:cache` în profilul production.
-2. Mută `APP_KEY` în secret management (nu hardcoded).
-3. Adaugă rate-limiting pe `/auth/login`.
-4. Adaugă refresh flow pentru token și expirare controlată.
-5. Adaugă index compus pe `expenses(user_id, category_id, date)` la volum mare.
-6. Rulează frontend în imagine nginx pentru production (`vite build` + static serving).
-7. Adaugă teste API (Pest/PHPUnit) pentru auth, categorii, cheltuieli, rapoarte.
+- Login
+- Dashboard
+- Expenses
+- Categories
+- Users (admin operations)
+
+## Common Commands
+
+### Rebuild from scratch
+
+```bash
+docker compose down -v
+docker compose up --build
+```
+
+### Check running services
+
+```bash
+docker compose ps
+```
+
+### Backend logs
+
+```bash
+docker compose logs -f backend
+```
+
+### Frontend logs
+
+```bash
+docker compose logs -f frontend
+```
+
+## Troubleshooting
+
+- **Cannot connect to Traefik network**: create or adjust `shop-online_web` network, or remove Traefik network attachment for local-only use.
+- **CORS/auth issues**: verify `SANCTUM_STATEFUL_DOMAINS`, `SESSION_DOMAIN`, and frontend URL values in compose env.
+- **403 on `/health`**: send the required `Origin` header expected by `RestrictHealthOrigin` middleware.
+- **Stale frontend assets**: use the app’s **Reset cache** button and reload.
+
+## Security / Production Recommendations
+
+- Move secrets (`APP_KEY`, DB credentials) to real secret management.
+- Add rate limiting for login endpoints.
+- Harden CORS and allowed origins per environment.
+- Add CI checks and API tests (auth, users, categories, expenses, reports).

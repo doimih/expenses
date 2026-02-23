@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'paths' => ['api/*', 'sanctum/csrf-cookie', 'expenses/health'],
+    'paths' => ['api/*', 'sanctum/csrf-cookie', 'health'],
     'allowed_methods' => ['*'],
     'allowed_origins' => ['http://localhost:15173', 'https://projects.doimih.net'],
     'allowed_origins_patterns' => [],

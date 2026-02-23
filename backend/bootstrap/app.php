@@ -10,10 +10,10 @@ return Application::configure(basePath: dirname(__DIR__))
         web: __DIR__.'/../routes/web.php',
         api: __DIR__.'/../routes/api.php',
         commands: __DIR__.'/../routes/console.php',
-        health: '/expenses/health',
+           health: '/health',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        $middleware->append(RestrictHealthOrigin::class);
+           $middleware->append(RestrictHealthOrigin::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
