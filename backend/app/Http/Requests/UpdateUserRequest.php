@@ -4,8 +4,9 @@ namespace App\Http\Requests;
 
 use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
-class RegisterRequest extends FormRequest
+class UpdateUserRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -14,13 +15,15 @@ class RegisterRequest extends FormRequest
 
     public function rules(): array
     {
+        /** @var User|null $user */
+        $user = $this->route('user');
+
         return [
             'first_name' => ['required_without:name', 'string', 'max:60'],
             'last_name' => ['required_without:name', 'string', 'max:60'],
             'name' => ['nullable', 'string', 'max:120'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'string', 'min:6', 'confirmed'],
-            'device_name' => ['nullable', 'string', 'max:120'],
+            'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user?->id)],
+            'role' => ['required', 'in:' . implode(',', [User::ROLE_VISITOR, User::ROLE_USER, User::ROLE_SUPERADMIN])],
         ];
     }
 
@@ -32,8 +35,21 @@ class RegisterRequest extends FormRequest
             'first_name' => $firstName,
             'last_name' => $lastName,
             'name' => trim(sprintf('%s %s', $firstName, $lastName)),
-            'role' => User::ROLE_VISITOR,
+            'role' => $this->normalizeRole(),
         ]);
+    }
+
+    private function normalizeRole(): string
+    {
+        $role = trim((string) $this->input('role', ''));
+
+        if ($role !== '') {
+            return $role;
+        }
+
+        return filter_var($this->input('is_superadmin'), FILTER_VALIDATE_BOOL)
+            ? User::ROLE_SUPERADMIN
+            : User::ROLE_USER;
     }
 
     private function normalizeNameParts(): array

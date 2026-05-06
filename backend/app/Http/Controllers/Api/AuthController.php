@@ -15,11 +15,16 @@ class AuthController extends Controller
     public function register(RegisterRequest $request): JsonResponse
     {
         $data = $request->validated();
+        $fullName = trim(sprintf('%s %s', $data['first_name'], $data['last_name']));
 
         $user = User::query()->create([
-            'name' => $data['name'],
+            'first_name' => $data['first_name'],
+            'last_name' => $data['last_name'],
+            'name' => $fullName,
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
+            'role' => User::ROLE_VISITOR,
+            'is_superadmin' => false,
         ]);
 
         $token = $user->createToken($data['device_name'] ?? 'web')->plainTextToken;

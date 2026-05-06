@@ -2,18 +2,124 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --color-bg: #f7f6f3;
+  --color-panel: #ffffff;
+  --color-text: #1f1f1f;
+  --color-text-soft: #6f6d68;
+  --color-border-primary: rgba(31, 31, 31, 0.12);
+  --color-border-secondary: rgba(31, 31, 31, 0.18);
+  --color-border-tertiary: rgba(31, 31, 31, 0.08);
+  --accent: #6366f1;
+  --accent-soft: rgba(99, 102, 241, 0.08);
+  --danger: #ef4444;
+  --danger-strong: #dc2626;
+  --success: #16a34a;
+  --warning: #d97706;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+}
+
 body {
-  @apply bg-slate-100 text-slate-900;
+  @apply m-0 bg-stone-100 text-slate-900 antialiased;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: Inter, 'SF Pro Display', system-ui, sans-serif;
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+#root {
+  min-height: 100vh;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
 }
 
 .input {
-  @apply w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none;
+  @apply w-full bg-white px-3 py-2 text-[13px] text-slate-900 transition;
+  border-radius: var(--radius-md);
+  border: 0.5px solid var(--color-border-secondary);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+}
+
+.input:focus {
+  outline: 2px solid transparent;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
 .btn {
-  @apply rounded-md px-4 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700;
+  @apply px-4 py-2 text-sm font-semibold text-white transition;
+  border-radius: var(--radius-md);
+  background: var(--accent);
+}
+
+.btn:hover {
+  filter: brightness(0.96);
 }
 
 .card {
-  @apply rounded-xl bg-white p-4 shadow;
+  @apply bg-white;
+  border-radius: var(--radius-lg);
+  border: 0.5px solid var(--color-border-tertiary);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+  padding: 16px;
+}
+
+.panel-title {
+  @apply text-[15px] font-medium text-slate-900;
+}
+
+.panel-label {
+  @apply text-[11px] font-medium uppercase tracking-[0.18em] text-slate-500;
+}
+
+.metric-value {
+  @apply text-[32px] font-medium leading-none text-slate-900;
+}
+
+.micro-copy {
+  @apply text-[11px] text-slate-500;
+}
+
+.app-shell {
+  @apply min-h-screen;
+}
+
+.app-panel {
+  @apply bg-white;
+  border: 0.5px solid var(--color-border-tertiary);
+  border-radius: 12px;
+}
+
+.nav-pill {
+  @apply inline-flex items-center gap-2 rounded-full px-3 py-2 text-[13px] font-medium transition;
+}
+
+.nav-pill-active {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.tag-chip {
+  @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.icon-button {
+  @apply inline-flex h-9 w-9 items-center justify-center rounded-[10px] transition;
+  border: 0.5px solid var(--color-border-tertiary);
+  background: #fff;
+}
+
+.icon-button:hover {
+  border-color: var(--color-border-secondary);
+  background: #fafafa;
 }

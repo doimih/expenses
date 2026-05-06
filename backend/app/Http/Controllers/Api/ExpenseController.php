@@ -17,7 +17,8 @@ class ExpenseController extends Controller
         $query = Expense::query()
             ->with('category:id,name,color')
             ->where('user_id', $request->user()->id)
-            ->orderByDesc('date');
+            ->orderByDesc('created_at')
+            ->orderByDesc('id');
 
         if ($month && preg_match('/^\d{4}-\d{2}$/', $month)) {
             $query->whereRaw("to_char(date, 'YYYY-MM') = ?", [$month]);
@@ -30,8 +31,9 @@ class ExpenseController extends Controller
     {
         $data = $request->validated();
 
-        $ownedCategory = $request->user()->categories()->where('id', $data['category_id'])->exists();
-        abort_unless($ownedCategory, 422, 'Invalid category');
+        // Validate category exists globally
+        $categoryExists = \App\Models\Category::where('id', $data['category_id'])->exists();
+        abort_unless($categoryExists, 422, 'Invalid category');
 
         $expense = $request->user()->expenses()->create($data);
 
@@ -50,8 +52,10 @@ class ExpenseController extends Controller
         abort_unless($expense->user_id === $request->user()->id, 404);
 
         $data = $request->validated();
-        $ownedCategory = $request->user()->categories()->where('id', $data['category_id'])->exists();
-        abort_unless($ownedCategory, 422, 'Invalid category');
+        
+        // Validate category exists globally
+        $categoryExists = \App\Models\Category::where('id', $data['category_id'])->exists();
+        abort_unless($categoryExists, 422, 'Invalid category');
 
         $expense->update($data);
 

@@ -20,8 +20,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('expenses', ExpenseController::class);
     Route::get('/users', [UserController::class, 'index']);
     Route::post('/users', [UserController::class, 'store']);
+    Route::put('/users/{user}', [UserController::class, 'update']);
     Route::put('/users/{user}/password', [UserController::class, 'updatePassword']);
-    Route::patch('/users/{user}/superadmin', [UserController::class, 'updateSuperadmin']);
+    Route::delete('/users/{user}', [UserController::class, 'destroy']);
 
     Route::get('/reports/monthly', [ReportController::class, 'monthly']);
+    Route::get('/reports/admin-overview', [ReportController::class, 'adminOverview']);
 });

@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Carbon\Carbon;
 
 class ExpenseRequest extends FormRequest
 {
@@ -19,5 +20,22 @@ class ExpenseRequest extends FormRequest
             'description' => ['nullable', 'string', 'max:255'],
             'date' => ['required', 'date'],
         ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'date.regex' => 'Data trebuie să fie în format dd.mm.yyyy',
+        ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        // Convert dd.mm.yyyy to yyyy-mm-dd for storage
+        if ($this->has('date') && preg_match('/^(\d{2})\.(\d{2})\.(\d{4})$/', $this->date, $matches)) {
+            $this->merge([
+                'date' => "{$matches[3]}-{$matches[2]}-{$matches[1]}",
+            ]);
+        }
     }
 }

@@ -1,4 +1,4 @@
-const CACHE = 'expenses-pwa-v3';
+const CACHE = 'expenses-pwa-v5';
 const scopePath = new URL(self.registration.scope).pathname;
 const basePath = scopePath.endsWith('/') ? scopePath : `${scopePath}/`;
 const apiPath = `${basePath}api/`;

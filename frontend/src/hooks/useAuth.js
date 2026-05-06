@@ -29,6 +29,20 @@ export function useAuth() {
     setUser(data.user);
   };
 
+  const register = async ({ firstName, lastName, email, password, passwordConfirmation }) => {
+    const { data } = await api.post('/auth/register', {
+      first_name: firstName,
+      last_name: lastName,
+      email,
+      password,
+      password_confirmation: passwordConfirmation,
+      device_name: 'pwa-ios',
+    });
+
+    localStorage.setItem('token', data.token);
+    setUser(data.user);
+  };
+
   const logout = async () => {
     try {
       await api.post('/auth/logout');
@@ -38,5 +52,5 @@ export function useAuth() {
     }
   };
 
-  return { user, loading, login, logout };
+  return { user, loading, login, register, logout };
 }

@@ -12,10 +12,19 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
+    public const ROLE_VISITOR = 'visitor';
+
+    public const ROLE_USER = 'user';
+
+    public const ROLE_SUPERADMIN = 'superadmin';
+
     protected $fillable = [
+        'first_name',
+        'last_name',
         'name',
         'email',
         'password',
+        'role',
         'is_superadmin',
     ];
 
@@ -25,8 +34,14 @@ class User extends Authenticatable
     ];
 
     protected $casts = [
+        'role' => 'string',
         'is_superadmin' => 'boolean',
     ];
+
+    public function isSuperadmin(): bool
+    {
+        return $this->role === self::ROLE_SUPERADMIN || (bool) $this->is_superadmin;
+    }
 
     public function categories(): HasMany
     {
