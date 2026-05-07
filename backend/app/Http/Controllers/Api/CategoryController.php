@@ -12,7 +12,7 @@ class CategoryController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $categories = Category::orderBy('name')->get();
+        $categories = $request->user()->categories()->orderBy('name')->get();
 
         return response()->json($categories);
     }

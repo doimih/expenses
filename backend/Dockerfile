@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -y \
     unzip \
     curl \
     libpq-dev \
+    postgresql-client \
     && docker-php-ext-install pdo pdo_pgsql \
     && rm -rf /var/lib/apt/lists/*
 
@@ -15,7 +16,7 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 RUN composer create-project laravel/laravel /tmp/laravel --no-interaction \
     && cp -a /tmp/laravel/. /var/www/ \
     && rm -rf /tmp/laravel \
-    && composer require laravel/sanctum --no-interaction
+    && composer require laravel/sanctum aws/aws-sdk-php --no-interaction
 
 COPY . /app-overlay
 RUN rm -f /var/www/database/migrations/*_create_users_table.php \

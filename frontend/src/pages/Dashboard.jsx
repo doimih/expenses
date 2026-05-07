@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useEffect, useMemo, useState } from 'react';
 import PieChart from '../components/charts/PieChart';
+import BarChart from '../components/charts/BarChart';
 import api from '../services/api';
 
 function currentMonth() {
@@ -32,7 +33,8 @@ function formatPercent(value) {
 
 function monthLabel(month) {
   const [year, mm] = month.split('-').map(Number);
-  return new Date(year, mm - 1, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  const monthNames = ['ianuarie', 'februarie', 'martie', 'aprilie', 'mai', 'iunie', 'iulie', 'august', 'septembrie', 'octombrie', 'noiembrie', 'decembrie'];
+  return `${monthNames[mm - 1]} ${year}`;
 }
 
 function timeAgo(value) {
@@ -53,10 +55,57 @@ function timeAgo(value) {
   return `${days} day${days === 1 ? '' : 's'} ago`;
 }
 
-function MetricCard({ label, value, delta, deltaTone = 'success' }) {
+function normalizeCategory(name = '') {
+  return name.toLowerCase().trim();
+}
+
+function CategoryIcon({ name = '', color = '#6366f1', size = 14 }) {
+  const key = normalizeCategory(name);
+  const s = { width: size, height: size, flexShrink: 0 };
+  const p = { fill: 'none', stroke: color, strokeWidth: 1.8 };
+
+  if (['shopping', 'haine', 'imbracaminte', 'incaltamine'].includes(key))
+    return <svg viewBox="0 0 24 24" style={s} {...p}><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>;
+
+  if (['food', 'mancare', 'nutritionist'].includes(key))
+    return <svg viewBox="0 0 24 24" style={s} {...p}><path d="M7 3v7M10 3v7M7 7h3M16 3v18M16 11c2.2 0 4-1.8 4-4V3h-4"/></svg>;
+
+  if (['transport', 'bolt', 'metrou', 'transfer', 'rovigneta'].includes(key))
+    return <svg viewBox="0 0 24 24" style={s} {...p}><path d="M4 13l1.5-5a2 2 0 0 1 1.9-1.4h9.2A2 2 0 0 1 18.5 8L20 13v4h-2v2h-2v-2H8v2H6v-2H4v-4z"/><circle cx="7.5" cy="14.5" r="1"/><circle cx="16.5" cy="14.5" r="1"/></svg>;
+
+  if (['housing', 'intretinere apt'].includes(key))
+    return <svg viewBox="0 0 24 24" style={s} {...p}><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>;
+
+  if (['entertainment', 'diverse', 'grecia-thassos'].includes(key))
+    return <svg viewBox="0 0 24 24" style={s} {...p}><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/></svg>;
+
+  if (['energie electrica', 'digi'].includes(key))
+    return <svg viewBox="0 0 24 24" style={s} {...p}><path d="M13 2L6 13h5l-1 9 8-12h-5l0-8z"/></svg>;
+
+  if (['asigurari', 'vitamine'].includes(key))
+    return <svg viewBox="0 0 24 24" style={s} {...p}><path d="M12 3l7 3v6c0 5-3.2 8-7 9-3.8-1-7-4-7-9V6l7-3z"/></svg>;
+
+  return <svg viewBox="0 0 24 24" style={s} {...p}><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>;
+}
+
+function MetricCardIcon({ type }) {
+  const p = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, width: 13, height: 13 };
+  if (type === 'money')  return <svg viewBox="0 0 24 24" {...p}><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>;
+  if (type === 'cal')    return <svg viewBox="0 0 24 24" {...p}><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>;
+  if (type === 'tx')     return <svg viewBox="0 0 24 24" {...p}><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>;
+  if (type === 'trend')  return <svg viewBox="0 0 24 24" {...p}><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>;
+  return null;
+}
+
+function MetricCard({ label, value, delta, deltaTone = 'success', iconType = 'money' }) {
   return (
     <div className="app-panel p-5">
-      <p className="panel-label">{label}</p>
+      <p className="panel-label inline-flex items-center gap-2">
+        <span className="grid h-5 w-5 place-items-center rounded-md bg-slate-100 text-slate-500">
+          <MetricCardIcon type={iconType} />
+        </span>
+        <span>{label}</span>
+      </p>
       <p className="mt-5 text-[22px] font-medium text-slate-900 md:text-[24px]">{value}</p>
       <p className={`mt-2 text-[13px] ${deltaTone === 'danger' ? 'text-[var(--danger)]' : 'text-[var(--success)]'}`}>{delta}</p>
     </div>
@@ -141,7 +190,7 @@ function AdminDashboard({ month }) {
                   </span>
                 </div>
                 <div className="flex items-center gap-2 text-[13px] text-[var(--success)]">
-                  <span className="h-2.5 w-2.5 rounded-full bg-[var(--success)]" />
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.2"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg>
                   {user.status}
                 </div>
               </div>
@@ -157,8 +206,11 @@ function AdminDashboard({ month }) {
           <div>
             {overview.activity.map((item, index) => (
               <div key={`${item.type}-${index}`} className="flex gap-3 border-b border-black/5 px-5 py-4 last:border-b-0">
-                <span className="mt-1 h-10 w-10 flex-shrink-0 rounded-full" style={{ background: `${item.color}14` }}>
-                  <span className="m-3 block h-4 w-4 rounded-full" style={{ background: item.color }} />
+                <span
+                  className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-full text-[12px] font-semibold"
+                  style={{ background: `${item.color}22`, color: item.color }}
+                >
+                  {(item.title || '?').slice(0, 2).toUpperCase()}
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="font-medium text-slate-900">{item.title}</p>
@@ -251,10 +303,10 @@ export default function Dashboard({ user }) {
       {report && (
         <>
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            <MetricCard label="This month" value={formatMoney(currentTotal)} delta={`${formatPercent(delta)} vs last month`} deltaTone={delta > 0 ? 'danger' : 'success'} />
-            <MetricCard label="Last month" value={formatMoney(previousTotal)} delta="↑ 5% vs previous" />
-            <MetricCard label="Transactions" value={transactionCount.toLocaleString('ro-RO')} delta={`+${Math.max(transactionCount - Math.round(transactionCount * 0.8), 0)} vs last month`} />
-            <MetricCard label="Avg. per day" value={formatMoney(avgPerDay)} delta={`${formatPercent(delta / 2)} vs avg`} deltaTone={delta > 0 ? 'danger' : 'success'} />
+            <MetricCard iconType="money" label="This month" value={formatMoney(currentTotal)} delta={`${formatPercent(delta)} vs last month`} deltaTone={delta > 0 ? 'danger' : 'success'} />
+            <MetricCard iconType="cal" label="Last month" value={formatMoney(previousTotal)} delta="↑ 5% vs previous" />
+            <MetricCard iconType="tx" label="Transactions" value={transactionCount.toLocaleString('ro-RO')} delta={`+${Math.max(transactionCount - Math.round(transactionCount * 0.8), 0)} vs last month`} />
+            <MetricCard iconType="trend" label="Avg. per day" value={formatMoney(avgPerDay)} delta={`${formatPercent(delta / 2)} vs avg`} deltaTone={delta > 0 ? 'danger' : 'success'} />
           </div>
 
           <div className="grid gap-4 xl:grid-cols-[0.78fr_1.22fr]">
@@ -270,7 +322,12 @@ export default function Dashboard({ user }) {
                   {categoryBreakdown.map((category) => (
                     <div key={category.id} className="flex items-center justify-between text-[14px]">
                       <div className="flex items-center gap-2">
-                        <span className="h-2.5 w-2.5 rounded-full" style={{ background: category.color }} />
+                        <span
+                          className="grid h-6 w-6 place-items-center rounded-full text-[12px]"
+                          style={{ background: `${category.color}1f`, color: category.color }}
+                        >
+                            <CategoryIcon name={category.name} color={category.color} size={13} />
+                        </span>
                         <span>{category.name}</span>
                       </div>
                       <span className="font-medium text-slate-900">{Math.round(category.share)}%</span>
@@ -285,23 +342,29 @@ export default function Dashboard({ user }) {
                 <h3 className="panel-title">Last 6 months</h3>
                 <span className="text-[13px] text-slate-500">Monthly spend</span>
               </div>
-              <div className="space-y-4 p-5">
-                {(report.charts.bar.labels || []).map((label, index) => {
-                  const value = Number(report.charts.bar.datasets[0].data[index] || 0);
-                  const maxValue = Math.max(...report.charts.bar.datasets[0].data.map(Number), 1);
-                  const width = `${Math.max((value / maxValue) * 100, 12)}%`;
-
-                  return (
-                    <div key={label} className="grid grid-cols-[34px_minmax(0,1fr)] items-center gap-4">
-                      <span className="text-[13px] text-slate-600">{new Date(`${label}-01`).toLocaleDateString('en-US', { month: 'short' })}</span>
-                      <div className="relative h-6 overflow-hidden rounded-[8px] bg-stone-100">
-                        <div className="absolute inset-y-0 left-0 rounded-[8px] bg-[var(--accent)]/90 px-3 text-right text-[11px] font-medium leading-6 text-white" style={{ width }}>
-                          {Number(value).toLocaleString('ro-RO')}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+              <div className="p-4">
+                <BarChart
+                  data={{
+                    labels: (report.charts.bar.labels || []).map((l) =>
+                      new Date(`${l}-01`).toLocaleDateString('ro-RO', { month: 'short' })
+                    ),
+                    datasets: [{
+                      label: 'Cheltuieli',
+                      data: report.charts.bar.datasets[0].data.map(Number),
+                      backgroundColor: 'rgba(99,102,241,0.8)',
+                      borderRadius: 6,
+                      borderSkipped: false,
+                    }],
+                  }}
+                  options={{
+                    responsive: true,
+                    plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => ` RON ${ctx.parsed.y.toLocaleString('ro-RO')}` } } },
+                    scales: {
+                      x: { grid: { display: false }, ticks: { font: { size: 12 } } },
+                      y: { grid: { color: '#f1f5f9' }, ticks: { font: { size: 11 }, callback: (v) => `${v.toLocaleString('ro-RO')}` } },
+                    },
+                  }}
+                />
               </div>
             </section>
           </div>
@@ -317,7 +380,7 @@ export default function Dashboard({ user }) {
                   <div key={expense.id} className="flex items-center justify-between gap-4 border-b border-black/5 px-5 py-4 last:border-b-0">
                     <div className="flex items-center gap-3">
                       <span className="grid h-10 w-10 place-items-center rounded-full text-[11px] font-medium" style={{ background: `${expense.category?.color || '#6366f1'}14`, color: expense.category?.color || '#6366f1' }}>
-                        □
+                        <CategoryIcon name={expense.category?.name} color={expense.category?.color || '#6366f1'} size={17} />
                       </span>
                       <div>
                         <p className="font-medium text-slate-900">{expense.description || `${expense.category?.name} expense`}</p>
@@ -341,7 +404,15 @@ export default function Dashboard({ user }) {
                   return (
                     <div key={category.id}>
                       <div className="mb-1 flex items-center justify-between text-[13px]">
-                        <span className="font-medium text-slate-900">{category.name}</span>
+                        <span className="inline-flex items-center gap-2 font-medium text-slate-900">
+                          <span
+                            className="grid h-5 w-5 place-items-center rounded-full text-[11px]"
+                            style={{ background: `${category.color}1f`, color: category.color }}
+                          >
+                            <CategoryIcon name={category.name} color={category.color} size={12} />
+                          </span>
+                          <span>{category.name}</span>
+                        </span>
                         <span className="text-slate-500">{Number(category.total).toLocaleString('ro-RO')} / {Math.round(category.limit).toLocaleString('ro-RO')}</span>
                       </div>
                       <div className="h-2 rounded-full bg-stone-100">
@@ -359,6 +430,7 @@ export default function Dashboard({ user }) {
               </div>
             </section>
           </div>
+
         </>
       )}
     </div>

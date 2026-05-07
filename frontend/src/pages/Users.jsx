@@ -259,7 +259,7 @@ export default function Users() {
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Utilizator #{user.id}</p>
                 <p className="mt-1 text-lg font-semibold text-slate-900">{getUserDisplayName(user)}</p>
-                <p className="text-sm text-slate-500">Creat la: {new Date(user.created_at).toLocaleDateString('ro-RO')}</p>
+                <p className="text-sm text-slate-500">Creat la: {new Date(user.created_at).toLocaleDateString('ro-RO', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '.')}</p>
               </div>
               <span className={`rounded px-2 py-1 text-xs font-semibold ${roleBadgeClasses[user.role || 'user'] || roleBadgeClasses.user}`}>
                 {roleLabels[user.role || 'user'] || 'User'}
@@ -282,86 +282,94 @@ export default function Users() {
       </div>
 
       {isCreateModalOpen && (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-950/40 p-4">
-          <div className="w-full max-w-2xl overflow-auto rounded-3xl bg-white p-6 shadow-2xl sm:aspect-square">
-            <div className="mb-6 flex items-start justify-between gap-4">
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/35 px-4" onClick={() => setIsCreateModalOpen(false)}>
+          <div className="w-full max-w-[520px] rounded-[28px] border border-[#ddd5ca] bg-[#faf7f1] p-6 shadow-[0_24px_60px_rgba(32,24,15,0.18)]" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-start justify-between gap-4">
               <div>
-                <h3 className="text-xl font-bold text-slate-900">Adaugă utilizator</h3>
-                <p className="text-sm text-slate-500">Completează datele și salvează noul cont.</p>
+                <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[#8f8a7a]">Utilizator nou</p>
+                <h2 className="mt-1 text-[24px] font-semibold text-[#2e2a24]">Adaugă utilizator</h2>
               </div>
               <button
-                className="grid h-10 w-10 place-items-center rounded-full bg-slate-100 text-lg font-semibold text-slate-600 transition hover:bg-slate-200"
+                className="rounded-full p-2 text-[#8b8578] transition hover:bg-black/5"
                 type="button"
                 onClick={() => setIsCreateModalOpen(false)}
                 aria-label="Închide"
-                title="Închide"
               >
-                ×
+                ✕
               </button>
             </div>
 
-            <form className="grid h-full content-start gap-4 sm:grid-cols-2" onSubmit={createUser}>
+            <form className="mt-5 space-y-3" onSubmit={createUser}>
+              <div className="grid grid-cols-2 gap-3">
+                <input
+                  className="h-[52px] w-full rounded-2xl border border-[#d7d2c8] bg-white px-4 text-[15px] text-[#2d2922] outline-none placeholder:text-[#b0a99e]"
+                  placeholder="Prenume"
+                  value={newUser.firstName}
+                  onChange={(event) => setNewUser((prev) => ({ ...prev, firstName: event.target.value }))}
+                  required
+                />
+                <input
+                  className="h-[52px] w-full rounded-2xl border border-[#d7d2c8] bg-white px-4 text-[15px] text-[#2d2922] outline-none placeholder:text-[#b0a99e]"
+                  placeholder="Nume"
+                  value={newUser.lastName}
+                  onChange={(event) => setNewUser((prev) => ({ ...prev, lastName: event.target.value }))}
+                  required
+                />
+              </div>
               <input
-                className="input"
-                placeholder="Prenume"
-                value={newUser.firstName}
-                onChange={(event) => setNewUser((prev) => ({ ...prev, firstName: event.target.value }))}
-                required
-              />
-              <input
-                className="input"
-                placeholder="Nume"
-                value={newUser.lastName}
-                onChange={(event) => setNewUser((prev) => ({ ...prev, lastName: event.target.value }))}
-                required
-              />
-              <input
-                className="input sm:col-span-2"
+                className="h-[52px] w-full rounded-2xl border border-[#d7d2c8] bg-white px-4 text-[15px] text-[#2d2922] outline-none placeholder:text-[#b0a99e]"
                 type="email"
                 placeholder="Email"
                 value={newUser.email}
                 onChange={(event) => setNewUser((prev) => ({ ...prev, email: event.target.value }))}
                 required
               />
-              <input
-                className="input"
-                type="password"
-                placeholder="Parolă"
-                value={newUser.password}
-                onChange={(event) => setNewUser((prev) => ({ ...prev, password: event.target.value }))}
-                minLength={8}
-                required
-              />
-              <input
-                className="input"
-                type="password"
-                placeholder="Confirmare"
-                value={newUser.password_confirmation}
-                onChange={(event) => setNewUser((prev) => ({ ...prev, password_confirmation: event.target.value }))}
-                minLength={8}
-                required
-              />
-              <label className="text-sm flex items-center gap-2 sm:col-span-2">
-                Rol
-              </label>
-              <select
-                className="input sm:col-span-2"
-                value={newUser.role}
-                onChange={(event) => setNewUser((prev) => ({ ...prev, role: event.target.value }))}
-              >
-                {roleOptions.map((option) => (
-                  <option key={option.value} value={option.value}>{option.label}</option>
-                ))}
-              </select>
-              <div className="mt-auto flex items-center justify-end gap-3 sm:col-span-2">
+              <div className="grid grid-cols-2 gap-3">
+                <input
+                  className="h-[52px] w-full rounded-2xl border border-[#d7d2c8] bg-white px-4 text-[15px] text-[#2d2922] outline-none placeholder:text-[#b0a99e]"
+                  type="password"
+                  placeholder="Parolă"
+                  value={newUser.password}
+                  onChange={(event) => setNewUser((prev) => ({ ...prev, password: event.target.value }))}
+                  minLength={8}
+                  required
+                />
+                <input
+                  className="h-[52px] w-full rounded-2xl border border-[#d7d2c8] bg-white px-4 text-[15px] text-[#2d2922] outline-none placeholder:text-[#b0a99e]"
+                  type="password"
+                  placeholder="Confirmare parolă"
+                  value={newUser.password_confirmation}
+                  onChange={(event) => setNewUser((prev) => ({ ...prev, password_confirmation: event.target.value }))}
+                  minLength={8}
+                  required
+                />
+              </div>
+              <div>
+                <p className="mb-1.5 text-[12px] font-semibold uppercase tracking-[0.08em] text-[#8f8a7a]">Rol</p>
+                <select
+                  className="h-[52px] w-full rounded-2xl border border-[#d7d2c8] bg-white px-4 text-[15px] text-[#2d2922] outline-none"
+                  value={newUser.role}
+                  onChange={(event) => setNewUser((prev) => ({ ...prev, role: event.target.value }))}
+                >
+                  {roleOptions.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex items-center justify-end gap-3 pt-2">
                 <button
-                  className="rounded-md px-4 py-2 text-sm font-semibold bg-slate-200 text-slate-700"
+                  className="rounded-2xl border border-[#d7d2c8] bg-white px-5 py-3 text-[15px] font-medium text-[#37332c] transition hover:bg-[#f3ede3]"
                   type="button"
                   onClick={() => setIsCreateModalOpen(false)}
                 >
                   Anulează
                 </button>
-                <button className="btn" type="submit">Creează</button>
+                <button
+                  className="rounded-2xl bg-[#6366f1] px-5 py-3 text-[15px] font-semibold text-white transition hover:bg-[#4f46e5]"
+                  type="submit"
+                >
+                  Creează
+                </button>
               </div>
             </form>
           </div>

@@ -20,6 +20,28 @@
   --radius-lg: 12px;
 }
 
+.dark {
+  --color-bg: #1a1a1a;
+  --color-panel: #262626;
+  --color-text: #f5f5f5;
+  --color-text-soft: #a0a0a0;
+  --color-border-primary: rgba(255, 255, 255, 0.12);
+  --color-border-secondary: rgba(255, 255, 255, 0.18);
+  --color-border-tertiary: rgba(255, 255, 255, 0.08);
+  --accent: #818cf8;
+  --accent-soft: rgba(129, 140, 248, 0.12);
+  --danger: #ff6b6b;
+  --danger-strong: #ff5252;
+  --success: #51cf66;
+  --warning: #ffa94d;
+}
+
+html {
+  width: 100%;
+  min-height: 100%;
+  overflow-x: hidden;
+}
+
 body {
   @apply m-0 bg-stone-100 text-slate-900 antialiased;
   background: var(--color-bg);
@@ -28,9 +50,13 @@ body {
   padding-bottom: env(safe-area-inset-bottom);
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
+  width: 100%;
+  min-height: 100%;
+  overflow-x: hidden;
 }
 
 #root {
+  width: 100%;
   min-height: 100vh;
 }
 
@@ -52,6 +78,17 @@ textarea {
   outline: 2px solid transparent;
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-soft);
+  scroll-behavior: auto;
+  scroll-margin-top: 100px;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+input[type="date"]:focus,
+input[type="email"]:focus,
+textarea:focus {
+  scroll-behavior: auto;
+  scroll-margin-top: 100px;
 }
 
 .btn {
@@ -108,18 +145,203 @@ textarea {
 }
 
 .tag-chip {
-  @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium;
-  background: var(--accent-soft);
-  color: var(--accent);
+  @apply inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-600;
 }
 
 .icon-button {
-  @apply inline-flex h-9 w-9 items-center justify-center rounded-[10px] transition;
-  border: 0.5px solid var(--color-border-tertiary);
-  background: #fff;
+  @apply inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:bg-slate-50;
 }
 
-.icon-button:hover {
+.expense-filter-select {
+  border-color: #d6d9e4;
+  background: #f8fafc;
+  color: #334155;
+}
+
+.expense-month-chip {
+  border-color: #d6d9e4;
+  background: #f8fafc;
+  color: #475569;
+}
+
+.expense-month-chip:hover {
+  background: #f1f5f9;
+}
+
+.expense-month-chip-active {
+  border-color: #4f46e5;
+  background: #eef2ff;
+  color: #4338ca;
+}
+
+/* Dark mode overrides */
+.dark .input {
+  background: #333333;
+  border-color: #444444;
+  color: #f5f5f5;
+}
+
+.dark .input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.dark .btn {
+  background: var(--accent);
+  filter: brightness(1.1);
+}
+
+.dark .card {
+  background: var(--color-panel);
+  border-color: #333333;
+}
+
+.dark .app-panel {
+  background: var(--color-panel);
+  border-color: #333333;
+}
+
+.dark .tag-chip {
+  background: #333333;
+  border-color: #444444;
+  color: #a0a0a0;
+}
+
+.dark .icon-button {
+  background: #262626;
+  border-color: #333333;
+  color: #a0a0a0;
+}
+
+.dark .icon-button:hover {
+  background: #333333;
+}
+
+.dark .expense-filter-select {
+  background: #2b2b2b;
+  border-color: #444444;
+  color: var(--color-text);
+}
+
+.dark .expense-month-chip {
+  background: #2b2b2b;
+  border-color: #444444;
+  color: var(--color-text-soft);
+}
+
+.dark .expense-month-chip:hover {
+  background: #333333;
+}
+
+.dark .expense-month-chip-active {
+  background: rgba(129, 140, 248, 0.18);
+  border-color: var(--accent);
+  color: #c7d2fe;
+}
+
+.dark .bg-white,
+.dark .bg-white\/95 {
+  background: var(--color-panel) !important;
+}
+
+.dark .bg-slate-50,
+.dark .bg-slate-100,
+.dark .bg-stone-50,
+.dark .bg-stone-100 {
+  background: color-mix(in srgb, var(--color-panel) 88%, var(--color-text) 12%) !important;
+}
+
+.dark .border-slate-100,
+.dark .border-slate-200,
+.dark .border-slate-300,
+.dark .border-black\/5,
+.dark .border-black\/10 {
+  border-color: var(--color-border-secondary) !important;
+}
+
+.dark .text-slate-900,
+.dark .text-slate-800,
+.dark .text-slate-700 {
+  color: var(--color-text) !important;
+}
+
+.dark .text-slate-600,
+.dark .text-slate-500,
+.dark .text-slate-400 {
+  color: var(--color-text-soft) !important;
+}
+
+.dark .hover\:bg-slate-50:hover,
+.dark .hover\:bg-slate-100:hover,
+.dark .hover\:bg-stone-50:hover,
+.dark .hover\:bg-red-50:hover {
+  background: color-mix(in srgb, var(--color-panel) 82%, var(--color-text) 18%) !important;
+}
+
+.dark .hover\:text-slate-900:hover,
+.dark .hover\:text-slate-700:hover,
+.dark .hover\:text-slate-600:hover {
+  color: var(--color-text) !important;
+}
+
+/* Settings theme normalization: keep light and dark palettes coherent */
+.settings-page .card,
+.settings-page .app-panel,
+.settings-page .bg-white {
+  background: var(--color-panel) !important;
+}
+
+.settings-page .border-slate-100,
+.settings-page .border-slate-200,
+.settings-page .border-slate-300 {
+  border-color: var(--color-border-secondary) !important;
+}
+
+.settings-page .bg-slate-50 {
+  background: color-mix(in srgb, var(--color-panel) 88%, var(--color-text) 12%) !important;
+}
+
+.settings-page .bg-slate-200 {
+  background: color-mix(in srgb, var(--color-panel) 70%, var(--color-text) 30%) !important;
+}
+
+.settings-page .text-slate-900,
+.settings-page .text-slate-800,
+.settings-page .text-slate-700 {
+  color: var(--color-text) !important;
+}
+
+.settings-page .text-slate-600,
+.settings-page .text-slate-500 {
+  color: var(--color-text-soft) !important;
+}
+
+.settings-page .bg-indigo-50 {
+  background: var(--accent-soft) !important;
+}
+
+.settings-page .border-indigo-100,
+.settings-page .border-indigo-600 {
+  border-color: var(--accent) !important;
+}
+
+.settings-page .text-indigo-800,
+.settings-page .text-indigo-700,
+.settings-page .text-indigo-600 {
+  color: var(--accent) !important;
+}
+
+.settings-page input,
+.settings-page select,
+.settings-page textarea {
+  background: var(--color-panel);
+  color: var(--color-text);
   border-color: var(--color-border-secondary);
-  background: #fafafa;
+}
+
+.settings-page input:disabled,
+.settings-page select:disabled,
+.settings-page textarea:disabled {
+  background: color-mix(in srgb, var(--color-panel) 85%, var(--color-text) 15%);
+  color: var(--color-text-soft);
 }

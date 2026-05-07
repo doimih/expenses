@@ -5,11 +5,13 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
+use App\Models\EmailSetting;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 class AuthController extends Controller
 {
     public function register(RegisterRequest $request): JsonResponse
@@ -29,11 +31,57 @@ class AuthController extends Controller
 
         $token = $user->createToken($data['device_name'] ?? 'web')->plainTextToken;
 
+        $this->sendNewUserNotification($user);
+        PushController::notifyAdmins('New user registered', "{$user->name} ({$user->email}) just registered.");
+
         return response()->json([
             'token' => $token,
             'token_type' => 'Bearer',
             'user' => $user,
         ], 201);
+    }
+
+    private function sendNewUserNotification(User $user): void
+    {
+        try {
+            $settings = EmailSetting::query()->first();
+
+            if (! $settings || ! $settings->active || ! $settings->monitoring_alert_recipient) {
+                return;
+            }
+
+            $mailer = strtolower((string) $settings->mailer);
+            $encryption = $settings->encryption ?? null;
+
+            config([
+                'mail.default' => $mailer,
+                "mail.mailers.{$mailer}.transport" => $mailer,
+                "mail.mailers.{$mailer}.host" => $settings->host,
+                "mail.mailers.{$mailer}.port" => (int) $settings->port,
+                "mail.mailers.{$mailer}.encryption" => $encryption ? strtolower($encryption) : null,
+                "mail.mailers.{$mailer}.username" => $settings->username,
+                "mail.mailers.{$mailer}.password" => $settings->password,
+                'mail.from.address' => $settings->from_address,
+                'mail.from.name' => $settings->from_name,
+            ]);
+
+            $recipient = $settings->monitoring_alert_recipient;
+            $name = $user->name;
+            $email = $user->email;
+            $date = now()->format('d.m.Y H:i');
+
+            Mail::html(
+                "<h2>New user registered</h2>
+                <p><strong>Name:</strong> {$name}</p>
+                <p><strong>Email:</strong> {$email}</p>
+                <p><strong>Date:</strong> {$date}</p>",
+                function ($message) use ($recipient, $name) {
+                    $message->to($recipient)->subject("New registration: {$name}");
+                }
+            );
+        } catch (\Throwable $e) {
+            Log::error('Failed to send new user notification email: '.$e->getMessage());
+        }
     }
 
     public function login(LoginRequest $request): JsonResponse

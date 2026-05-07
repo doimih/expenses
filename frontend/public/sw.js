@@ -1,4 +1,4 @@
-const CACHE = 'expenses-pwa-v5';
+const CACHE = 'expenses-pwa-v7';
 const scopePath = new URL(self.registration.scope).pathname;
 const basePath = scopePath.endsWith('/') ? scopePath : `${scopePath}/`;
 const apiPath = `${basePath}api/`;
@@ -57,6 +57,37 @@ self.addEventListener('fetch', (event) => {
           return response;
         })
         .catch(() => caches.match(basePath));
+    })
+  );
+});
+
+// ── Push Notifications ──────────────────────────────────────────────────────
+
+self.addEventListener('push', (event) => {
+  let data = { title: 'Expenses', body: 'New notification' };
+  try {
+    data = event.data ? event.data.json() : data;
+  } catch (_) {}
+
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: `${basePath}icon-192.png`,
+      badge: `${basePath}icon-192.png`,
+      data: { url: self.registration.scope },
+    })
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const targetUrl = (event.notification.data && event.notification.data.url) || self.registration.scope;
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if (client.url === targetUrl && 'focus' in client) return client.focus();
+      }
+      if (clients.openWindow) return clients.openWindow(targetUrl);
     })
   );
 });

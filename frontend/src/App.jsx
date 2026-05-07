@@ -1,9 +1,14 @@
-import { NavLink, Route, Routes, useLocation } from 'react-router-dom';
+import { Navigate, NavLink, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { useAuth } from './hooks/useAuth';
+import { usePushNotifications } from './hooks/usePushNotifications';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Categories from './pages/Categories';
 import Expenses from './pages/Expenses';
+import ExpenseList from './pages/ExpenseList';
+import Settings from './pages/Settings';
+import SystemLogs from './pages/SystemLogs';
 import Users from './pages/Users';
 
 const adminNavItems = [
@@ -11,13 +16,22 @@ const adminNavItems = [
   { to: '/users', label: 'Users', section: 'Management' },
   { to: '/expenses', label: 'Expenses', section: 'Management' },
   { to: '/categories', label: 'Categories', section: 'Management' },
+  { to: '/system-logs', label: 'System logs', section: 'System' },
+  { to: '/settings', label: 'Settings', section: 'System' },
 ];
 
 const userNavItems = [
-  { to: '/', label: 'Dashboard' },
+  { to: '/dashboard', label: 'Dashboard' },
   { to: '/expenses', label: 'Expenses' },
   { to: '/categories', label: 'Categories' },
 ];
+
+const THEME_STORAGE_KEY = 'expenses:theme';
+
+function readStoredTheme() {
+  if (typeof window === 'undefined') return 'light';
+  return window.localStorage.getItem(THEME_STORAGE_KEY) || 'light';
+}
 
 function getUserLabel(user) {
   return `${user?.first_name || ''} ${user?.last_name || ''}`.trim() || user?.name || user?.email || 'User';
@@ -46,10 +60,12 @@ function BottomNav({ items }) {
   );
 }
 
-function AdminLayout({ children, onLogout, user }) {
+function AdminLayout({ children, onLogout, onToggleTheme, theme, user }) {
   const location = useLocation();
+  const navigate = useNavigate();
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 
-  const sectionOrder = ['Overview', 'Management'];
+  const sectionOrder = ['Overview', 'Management', 'System'];
 
   const resetAppCache = async () => {
     if ('serviceWorker' in navigator) {
@@ -66,9 +82,9 @@ function AdminLayout({ children, onLogout, user }) {
   };
 
   return (
-    <div className="app-shell bg-[var(--color-bg)] md:grid md:min-h-screen md:grid-cols-[208px_minmax(0,1fr)]">
-      <aside className="hidden border-r border-black/5 bg-white md:flex md:flex-col md:justify-between">
-        <div>
+    <div className="app-shell bg-[var(--color-bg)] md:min-h-screen">
+      <aside className="hidden border-r border-black/5 bg-white md:fixed md:inset-y-0 md:left-0 md:z-20 md:flex md:h-screen md:w-[208px] md:flex-col">
+        <div className="min-h-0 flex-1 overflow-y-auto">
           <div className="flex items-center gap-3 border-b border-black/5 px-5 py-5">
             <span className="grid h-8 w-8 place-items-center rounded-full bg-[var(--accent-soft)] text-sm font-semibold text-[var(--accent)]">E</span>
             <div>
@@ -102,18 +118,15 @@ function AdminLayout({ children, onLogout, user }) {
               );
             })}
 
-            <div className="space-y-3">
-              <p className="panel-label">System</p>
-              <div className="space-y-1 text-[14px] text-slate-500">
-                <div className="rounded-xl px-3 py-3">System logs</div>
-                <div className="rounded-xl px-3 py-3">Settings</div>
-              </div>
-            </div>
           </div>
         </div>
 
-        <div className="border-t border-black/5 px-5 py-5">
-          <div className="flex items-center gap-3">
+        <div className="relative mt-auto border-t border-black/5 bg-white px-5 py-5">
+          <button
+            type="button"
+            onClick={() => setIsProfileMenuOpen((value) => !value)}
+            className="flex w-full items-center gap-3 rounded-xl text-left transition hover:bg-stone-50"
+          >
             <span className="grid h-10 w-10 place-items-center rounded-full bg-[var(--accent)] text-sm font-semibold text-white">
               {getUserLabel(user).slice(0, 2).toUpperCase()}
             </span>
@@ -121,19 +134,49 @@ function AdminLayout({ children, onLogout, user }) {
               <p className="truncate text-[14px] font-medium text-slate-900">{getUserLabel(user)}</p>
               <p className="truncate text-[12px] text-slate-500">{user?.email}</p>
             </div>
-          </div>
+          </button>
+
+          {isProfileMenuOpen && (
+            <div className="absolute bottom-[calc(100%-8px)] left-5 right-5 rounded-2xl border border-black/5 bg-white p-2 shadow-[0_18px_35px_rgba(15,23,42,0.12)]">
+              <button
+                type="button"
+                onClick={() => {
+                  onToggleTheme();
+                  setIsProfileMenuOpen(false);
+                }}
+                className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-[14px] text-slate-700 transition hover:bg-stone-50"
+              >
+                <span>{theme === 'dark' ? '☀' : '☾'}</span>
+                <span>{theme === 'dark' ? 'Light mode' : 'Dark mode'}</span>
+              </button>
+              <button
+                type="button"
+                onClick={onLogout}
+                className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-[14px] text-slate-700 transition hover:bg-stone-50"
+              >
+                <span>⎋</span>
+                <span>Logout</span>
+              </button>
+            </div>
+          )}
         </div>
       </aside>
 
-      <main className="min-w-0 p-4 pb-24 md:p-0 md:pb-0">
+      <main className="min-w-0 p-4 pb-24 md:ml-[208px] md:p-0 md:pb-0">
         <div className="mx-auto flex min-h-screen max-w-[1120px] flex-col gap-4 md:p-4">
           <header className="app-panel flex flex-wrap items-center justify-between gap-3 px-5 py-4">
             <div>
               <h1 className="text-[15px] font-medium leading-tight text-slate-900">Admin dashboard</h1>
             </div>
             <div className="flex flex-1 flex-wrap items-center justify-end gap-3">
-              <input className="input max-w-[280px]" placeholder="Search users, expenses..." />
-              <button className="rounded-xl border border-black/10 px-4 py-2 text-[14px] font-medium text-slate-700">Export CSV</button>
+              <button
+                type="button"
+                onClick={() => navigate('/expense-list')}
+                className="icon-button"
+                title="Expense list"
+              >
+                ☰
+              </button>
               <button className="icon-button" type="button" onClick={resetAppCache} title="Reset cache">↺</button>
               <button className="icon-button" type="button" onClick={onLogout} title="Logout">⎋</button>
               <span className="grid h-10 w-10 place-items-center rounded-full bg-[var(--accent)] text-sm font-semibold text-white">
@@ -188,6 +231,17 @@ function UserLayout({ children, onLogout, user }) {
 
 export default function App() {
   const { user, loading, login, register, logout } = useAuth();
+  const [theme, setTheme] = useState(readStoredTheme);
+  usePushNotifications(!!user);
+
+  useEffect(() => {
+    document.body.classList.toggle('dark', theme === 'dark');
+    window.localStorage.setItem(THEME_STORAGE_KEY, theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((value) => (value === 'dark' ? 'light' : 'dark'));
+  };
 
   if (loading) {
     return <div className="min-h-screen grid place-items-center">Loading...</div>;
@@ -198,7 +252,7 @@ export default function App() {
   }
 
   const shell = user?.role === 'superadmin'
-    ? <AdminLayout user={user} onLogout={logout} />
+    ? <AdminLayout user={user} onLogout={logout} onToggleTheme={toggleTheme} theme={theme} />
     : <UserLayout user={user} onLogout={logout} />;
 
   return (
@@ -206,7 +260,7 @@ export default function App() {
       const ShellComponent = user?.role === 'superadmin' ? AdminLayout : UserLayout;
 
       return (
-        <ShellComponent user={user} onLogout={logout}>
+        <ShellComponent user={user} onLogout={logout} onToggleTheme={toggleTheme} theme={theme}>
           <Routes>
             {user?.role === 'superadmin' ? (
               <>
@@ -214,10 +268,14 @@ export default function App() {
                 <Route path="/expenses" element={<Expenses user={user} />} />
                 <Route path="/categories" element={<Categories />} />
                 <Route path="/users" element={<Users />} />
+                <Route path="/system-logs" element={<SystemLogs />} />
+                <Route path="/expense-list" element={<ExpenseList />} />
+                <Route path="/settings" element={<Settings />} />
               </>
             ) : (
               <>
-                <Route path="/" element={<Expenses user={user} />} />
+                <Route path="/" element={<Navigate to="/expenses" replace />} />
+                <Route path="/dashboard" element={<Dashboard user={user} />} />
                 <Route path="/expenses" element={<Expenses user={user} />} />
                 <Route path="/categories" element={<Categories />} />
               </>

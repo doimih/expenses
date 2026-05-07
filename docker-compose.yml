@@ -34,6 +34,8 @@ services:
       SANCTUM_STATEFUL_DOMAINS: localhost:15173
       SESSION_DOMAIN: localhost
       FRONTEND_URL: http://localhost:15173
+      VAPID_PUBLIC_KEY: "BNh2WH0sMU-igeA8NAxgMRCNzJBjplXMn59Mm0t4LzbGPAwOzGfHYu7Xz4nh-3gAktTd2GOWjlkoZcGr7jn91mA"
+      VAPID_PRIVATE_KEY: "pm8ll3lliPUcHYcA_9mPTDcAc8GnUtIlgpV62bslFCY"
     depends_on:
       postgres:
         condition: service_healthy
