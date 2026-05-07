@@ -2,6 +2,21 @@ import { Link } from 'react-router-dom';
 import { useEffect, useMemo, useState } from 'react';
 import PieChart from '../components/charts/PieChart';
 import BarChart from '../components/charts/BarChart';
+import {
+  IconBolt,
+  IconCalendarEvent,
+  IconCar,
+  IconCircleCheck,
+  IconCreditCard,
+  IconDeviceTv,
+  IconHome,
+  IconReceipt,
+  IconShieldCheck,
+  IconShoppingBag,
+  IconSparkles,
+  IconToolsKitchen2,
+  IconTrendingUp,
+} from '@tabler/icons-react';
 import api from '../services/api';
 
 function currentMonth() {
@@ -61,39 +76,38 @@ function normalizeCategory(name = '') {
 
 function CategoryIcon({ name = '', color = '#6366f1', size = 14 }) {
   const key = normalizeCategory(name);
-  const s = { width: size, height: size, flexShrink: 0 };
-  const p = { fill: 'none', stroke: color, strokeWidth: 1.8 };
+  const props = { size, stroke: 1.8, color, style: { flexShrink: 0 } };
 
   if (['shopping', 'haine', 'imbracaminte', 'incaltamine'].includes(key))
-    return <svg viewBox="0 0 24 24" style={s} {...p}><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>;
+    return <IconShoppingBag {...props} />;
 
   if (['food', 'mancare', 'nutritionist'].includes(key))
-    return <svg viewBox="0 0 24 24" style={s} {...p}><path d="M7 3v7M10 3v7M7 7h3M16 3v18M16 11c2.2 0 4-1.8 4-4V3h-4"/></svg>;
+    return <IconToolsKitchen2 {...props} />;
 
   if (['transport', 'bolt', 'metrou', 'transfer', 'rovigneta'].includes(key))
-    return <svg viewBox="0 0 24 24" style={s} {...p}><path d="M4 13l1.5-5a2 2 0 0 1 1.9-1.4h9.2A2 2 0 0 1 18.5 8L20 13v4h-2v2h-2v-2H8v2H6v-2H4v-4z"/><circle cx="7.5" cy="14.5" r="1"/><circle cx="16.5" cy="14.5" r="1"/></svg>;
+    return <IconCar {...props} />;
 
   if (['housing', 'intretinere apt'].includes(key))
-    return <svg viewBox="0 0 24 24" style={s} {...p}><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>;
+    return <IconHome {...props} />;
 
   if (['entertainment', 'diverse', 'grecia-thassos'].includes(key))
-    return <svg viewBox="0 0 24 24" style={s} {...p}><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/></svg>;
+    return <IconDeviceTv {...props} />;
 
   if (['energie electrica', 'digi'].includes(key))
-    return <svg viewBox="0 0 24 24" style={s} {...p}><path d="M13 2L6 13h5l-1 9 8-12h-5l0-8z"/></svg>;
+    return <IconBolt {...props} />;
 
   if (['asigurari', 'vitamine'].includes(key))
-    return <svg viewBox="0 0 24 24" style={s} {...p}><path d="M12 3l7 3v6c0 5-3.2 8-7 9-3.8-1-7-4-7-9V6l7-3z"/></svg>;
+    return <IconShieldCheck {...props} />;
 
-  return <svg viewBox="0 0 24 24" style={s} {...p}><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>;
+  return <IconSparkles {...props} />;
 }
 
 function MetricCardIcon({ type }) {
-  const p = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, width: 13, height: 13 };
-  if (type === 'money')  return <svg viewBox="0 0 24 24" {...p}><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>;
-  if (type === 'cal')    return <svg viewBox="0 0 24 24" {...p}><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>;
-  if (type === 'tx')     return <svg viewBox="0 0 24 24" {...p}><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>;
-  if (type === 'trend')  return <svg viewBox="0 0 24 24" {...p}><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>;
+  const props = { size: 13, stroke: 1.8 };
+  if (type === 'money') return <IconCreditCard {...props} aria-hidden="true" />;
+  if (type === 'cal') return <IconCalendarEvent {...props} aria-hidden="true" />;
+  if (type === 'tx') return <IconReceipt {...props} aria-hidden="true" />;
+  if (type === 'trend') return <IconTrendingUp {...props} aria-hidden="true" />;
   return null;
 }
 
@@ -190,7 +204,7 @@ function AdminDashboard({ month }) {
                   </span>
                 </div>
                 <div className="flex items-center gap-2 text-[13px] text-[var(--success)]">
-                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.2"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg>
+                  <IconCircleCheck size={14} stroke={2.2} aria-hidden="true" />
                   {user.status}
                 </div>
               </div>

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { IconKey, IconPencil, IconPlus, IconTrash, IconX } from '@tabler/icons-react';
 import api from '../services/api';
 
 const emptyNewUser = {
@@ -34,32 +35,15 @@ const getUserDisplayName = (user) => {
 };
 
 function TrashIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M4 7h16" />
-      <path strokeLinecap="round" strokeLinejoin="round" d="M10 11v6" />
-      <path strokeLinecap="round" strokeLinejoin="round" d="M14 11v6" />
-      <path strokeLinecap="round" strokeLinejoin="round" d="M6 7l1 12h10l1-12" />
-      <path strokeLinecap="round" strokeLinejoin="round" d="M9 7V5h6v2" />
-    </svg>
-  );
+  return <IconTrash size={16} stroke={2} aria-hidden="true" />;
 }
 
 function KeyIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M15 7a4 4 0 1 0-7.75 1.25L3 12.5V15h2.5v2H8v2h3l4.25-4.25A4 4 0 0 0 15 7z" />
-      <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6.5h.01" />
-    </svg>
-  );
+  return <IconKey size={16} stroke={2} aria-hidden="true" />;
 }
 
 function PencilIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 3.487a2.1 2.1 0 1 1 2.97 2.97L8.4 17.89l-3.9.93.93-3.9L16.862 3.487z" />
-    </svg>
-  );
+  return <IconPencil size={16} stroke={2} aria-hidden="true" />;
 }
 
 export default function Users() {
@@ -215,7 +199,7 @@ export default function Users() {
           aria-label="Adaugă utilizator"
           title="Adaugă utilizator"
         >
-          +
+          <IconPlus size={18} stroke={2.2} aria-hidden="true" />
         </button>
       </div>
 
@@ -295,7 +279,7 @@ export default function Users() {
                 onClick={() => setIsCreateModalOpen(false)}
                 aria-label="Închide"
               >
-                ✕
+                <IconX size={18} stroke={2.2} aria-hidden="true" />
               </button>
             </div>
 
@@ -391,7 +375,7 @@ export default function Users() {
                 aria-label="Închide"
                 title="Închide"
               >
-                ×
+                <IconX size={18} stroke={2.2} aria-hidden="true" />
               </button>
             </div>
 
@@ -444,7 +428,7 @@ export default function Users() {
                 aria-label="Închide"
                 title="Închide"
               >
-                ×
+                <IconX size={18} stroke={2.2} aria-hidden="true" />
               </button>
             </div>
 

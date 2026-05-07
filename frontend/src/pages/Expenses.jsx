@@ -2,6 +2,16 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import PieChart from '../components/charts/PieChart';
+import {
+  IconCalendarEvent,
+  IconCash,
+  IconCopy,
+  IconCreditCard,
+  IconDeviceFloppy,
+  IconSparkles,
+  IconTag,
+  IconX,
+} from '@tabler/icons-react';
 
 const paymentOptions = ['Cash', 'Card'];
 const presetTags = ['+ work', '+ travel', '+ recurring', '+ client'];
@@ -136,12 +146,7 @@ function categoryTone(category, index) {
 function iconSquare(color) {
   return (
     <span className="inline-flex h-4 w-4 items-center justify-center" style={{ color }}>
-      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-        <path
-          d="M8 1.5L9.45 5.05L13 6.5L9.45 7.95L8 11.5L6.55 7.95L3 6.5L6.55 5.05L8 1.5Z"
-          fill="currentColor"
-        />
-      </svg>
+      <IconSparkles size={14} stroke={1.8} aria-hidden="true" />
     </span>
   );
 }
@@ -150,10 +155,7 @@ function semanticIcon(kind, color) {
   if (kind === 'category') {
     return (
       <span className="inline-flex h-4 w-4 items-center justify-center" style={{ color }}>
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-          <path d="M3 5.25C3 4.56 3.56 4 4.25 4H7.2C7.53 4 7.84 4.13 8.08 4.37L12 8.29C12.49 8.78 12.49 9.57 12 10.06L10.06 12C9.57 12.49 8.78 12.49 8.29 12L4.37 8.08C4.13 7.84 4 7.53 4 7.2V5.25Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
-          <circle cx="5.75" cy="5.75" r="0.9" fill="currentColor"/>
-        </svg>
+        <IconTag size={14} stroke={1.8} aria-hidden="true" />
       </span>
     );
   }
@@ -161,12 +163,7 @@ function semanticIcon(kind, color) {
   if (kind === 'cash') {
     return (
       <span className="inline-flex h-4 w-4 items-center justify-center" style={{ color }}>
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-          <rect x="2.5" y="4" width="11" height="8" rx="1.8" stroke="currentColor" strokeWidth="1.5"/>
-          <circle cx="8" cy="8" r="1.7" stroke="currentColor" strokeWidth="1.3"/>
-          <path d="M4.2 6.1H4.25" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
-          <path d="M11.75 9.9H11.8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
-        </svg>
+        <IconCash size={14} stroke={1.8} aria-hidden="true" />
       </span>
     );
   }
@@ -174,11 +171,7 @@ function semanticIcon(kind, color) {
   if (kind === 'card') {
     return (
       <span className="inline-flex h-4 w-4 items-center justify-center" style={{ color }}>
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-          <rect x="2.25" y="3.5" width="11.5" height="9" rx="1.8" stroke="currentColor" strokeWidth="1.5"/>
-          <path d="M2.75 6.5H13.25" stroke="currentColor" strokeWidth="1.5"/>
-          <path d="M4.5 10H7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-        </svg>
+        <IconCreditCard size={14} stroke={1.8} aria-hidden="true" />
       </span>
     );
   }
@@ -190,10 +183,7 @@ function actionIcon(kind, color) {
   if (kind === 'cancel') {
     return (
       <span className="inline-flex h-4 w-4 items-center justify-center" style={{ color }}>
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-          <path d="M4 4L12 12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-          <path d="M12 4L4 12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-        </svg>
+        <IconX size={14} stroke={1.8} aria-hidden="true" />
       </span>
     );
   }
@@ -201,25 +191,14 @@ function actionIcon(kind, color) {
   if (kind === 'duplicate') {
     return (
       <span className="inline-flex h-4 w-4 items-center justify-center" style={{ color }}>
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-          <rect x="5" y="3" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.4" />
-          <rect x="3" y="6" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.4" opacity="0.75" />
-        </svg>
+        <IconCopy size={14} stroke={1.8} aria-hidden="true" />
       </span>
     );
   }
 
   return (
     <span className="inline-flex h-4 w-4 items-center justify-center" style={{ color }}>
-      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-        <path
-          d="M3.5 11.5V4.5C3.5 3.95 3.95 3.5 4.5 3.5H9.4L12.5 6.6V11.5C12.5 12.05 12.05 12.5 11.5 12.5H4.5C3.95 12.5 3.5 12.05 3.5 11.5Z"
-          stroke="currentColor"
-          strokeWidth="1.4"
-        />
-        <path d="M9 3.5V6.5H12" stroke="currentColor" strokeWidth="1.4" />
-        <path d="M5.5 9.5H10.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-      </svg>
+      <IconDeviceFloppy size={14} stroke={1.8} aria-hidden="true" />
     </span>
   );
 }
@@ -253,7 +232,9 @@ function AddCategoryModal({ initialName, initialColor, onClose, onSubmit, saving
             <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[#8f8a7a]">New category</p>
             <h2 className="mt-1 text-[24px] font-semibold text-[#2e2a24]">Add category</h2>
           </div>
-          <button type="button" onClick={onClose} className="rounded-full p-2 text-[#8b8578] transition hover:bg-black/5">✕</button>
+          <button type="button" onClick={onClose} className="rounded-full p-2 text-[#8b8578] transition hover:bg-black/5" aria-label="Close modal">
+            <IconX size={16} stroke={2} aria-hidden="true" />
+          </button>
         </div>
 
         <div className="mt-5 flex items-start gap-3">
@@ -367,6 +348,7 @@ export default function Expenses({ user }) {
   const dateTextRef = useRef(null);
   const dateCursorRef = useRef(null);
   const amountInputRef = useRef(null);
+  const notesInputRef = useRef(null);
   const [month, setMonth] = useState(() => monthFromDisplayDate(readLastExpenseDate()) || currentMonth());
   const [categories, setCategories] = useState([]);
   const [form, setForm] = useState(emptyForm(month));
@@ -630,6 +612,11 @@ export default function Expenses({ user }) {
     if (event.key === 'Enter' || event.key === ',') {
       event.preventDefault();
       addTag();
+      if (typeof window !== 'undefined') {
+        window.requestAnimationFrame(() => {
+          notesInputRef.current?.focus();
+        });
+      }
     }
   };
 
@@ -820,7 +807,7 @@ export default function Expenses({ user }) {
                       onClick={() => datePickerRef.current?.showPicker?.() || datePickerRef.current?.click()}
                       className="relative grid h-[52px] place-items-center rounded-xl border border-[#d7d2c8] bg-white text-[#2d2922]"
                     >
-                      <span className="text-lg">◧</span>
+                      <IconCalendarEvent size={18} stroke={1.9} aria-hidden="true" />
                       <input
                         ref={datePickerRef}
                         type="date"
@@ -860,7 +847,9 @@ export default function Expenses({ user }) {
                       {form.tags.map((tag) => (
                         <span key={tag} className="inline-flex items-center gap-1 rounded-full bg-[#eeecff] px-3 py-1 text-[14px] font-medium text-[#6a62ff]">
                           <span>{tag}</span>
-                          <button tabIndex={-1} type="button" onClick={() => removeTag(tag)} className="text-[#a29cf7]">×</button>
+                          <button tabIndex={-1} type="button" onClick={() => removeTag(tag)} className="text-[#a29cf7]" aria-label={`Remove tag ${tag}`}>
+                            <IconX size={12} stroke={2.2} aria-hidden="true" />
+                          </button>
                         </span>
                       ))}
                     </div>
@@ -899,6 +888,7 @@ export default function Expenses({ user }) {
               <div>
                 <Label>Notes</Label>
                 <textarea
+                  ref={notesInputRef}
                   className="mt-2 min-h-[116px] w-full rounded-2xl border border-[#d7d2c8] bg-white px-4 py-3 text-[17px] text-[#2d2922] outline-none"
                   placeholder="Add context or notes about this expense..."
                   value={form.notes}
@@ -992,7 +982,10 @@ export default function Expenses({ user }) {
                         <td className="py-2 pr-3 font-medium text-[#6b6760]">Payment</td>
                         <td className="py-2 text-right">
                           <span className="inline-flex items-center gap-1.5 text-[#4a4540]">
-                            {form.payment === 'Card' ? '▭' : '○'} {form.payment}
+                            {form.payment === 'Card'
+                              ? <IconCreditCard size={14} stroke={1.9} aria-hidden="true" />
+                              : <IconCash size={14} stroke={1.9} aria-hidden="true" />}
+                            {form.payment}
                           </span>
                         </td>
                       </tr>
@@ -1027,7 +1020,7 @@ export default function Expenses({ user }) {
               <div className="rounded-2xl border border-[#dbd5cb] bg-white p-5 shadow-sm">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#8f8a7a]">Spending this month</p>
                 <div className="mx-auto mt-4 w-[160px]">
-                  <PieChart data={categorySpendData.chartData} />
+                  <PieChart data={categorySpendData.chartData} variant="pseudo3d" />
                 </div>
 
                 {/* Top 8 list — colored text, no bullets */}

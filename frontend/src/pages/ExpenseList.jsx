@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { IconPencil, IconTrash, IconX } from '@tabler/icons-react';
 import api from '../services/api';
 
 function formatMoney(value) {
@@ -97,9 +98,7 @@ function EditModal({ expense, categories, onClose, onSaved }) {
         <div className="flex items-center justify-between border-b border-[#d7d8d3] px-5 py-4">
           <h2 className="text-[17px] font-semibold text-slate-900">Editează cheltuiala</h2>
           <button type="button" onClick={onClose} className="text-slate-400 hover:text-slate-600">
-            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M18 6L6 18M6 6l12 12" />
-            </svg>
+            <IconX className="h-5 w-5" stroke={2} aria-hidden="true" />
           </button>
         </div>
 
@@ -403,10 +402,7 @@ export default function ExpenseList({ user }) {
                             onClick={() => setEditingExpense(expense)}
                             className="rounded-lg p-1.5 text-slate-400 hover:bg-[var(--accent-soft)] hover:text-[var(--accent)] transition"
                           >
-                            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
-                              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                            </svg>
+                            <IconPencil className="h-4 w-4" stroke={1.8} aria-hidden="true" />
                           </button>
 
                           <button
@@ -416,12 +412,7 @@ export default function ExpenseList({ user }) {
                             onClick={() => handleDelete(expense.id)}
                             className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-500 transition disabled:opacity-40"
                           >
-                            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
-                              <polyline points="3 6 5 6 21 6" />
-                              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-                              <path d="M10 11v6M14 11v6" />
-                              <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-                            </svg>
+                            <IconTrash className="h-4 w-4" stroke={1.8} aria-hidden="true" />
                           </button>
                         </div>
                       )}
@@ -452,10 +443,7 @@ export default function ExpenseList({ user }) {
                       onClick={() => setEditingExpense(expense)}
                       className="rounded-lg p-1.5 text-slate-400 hover:bg-[var(--accent-soft)] hover:text-[var(--accent)] transition"
                     >
-                      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
-                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                      </svg>
+                      <IconPencil className="h-4 w-4" stroke={1.8} aria-hidden="true" />
                     </button>
 
                     <button
@@ -465,12 +453,7 @@ export default function ExpenseList({ user }) {
                       onClick={() => handleDelete(expense.id)}
                       className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-500 transition disabled:opacity-40"
                     >
-                      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
-                        <polyline points="3 6 5 6 21 6" />
-                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-                        <path d="M10 11v6M14 11v6" />
-                        <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-                      </svg>
+                      <IconTrash className="h-4 w-4" stroke={1.8} aria-hidden="true" />
                     </button>
                     </div>
                   )}

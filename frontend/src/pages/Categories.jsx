@@ -1,24 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
+import { IconPencil, IconPlus, IconTrash, IconX } from '@tabler/icons-react';
 import api from '../services/api';
 
 function PencilIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 3.487a2.1 2.1 0 1 1 2.97 2.97L8.4 17.89l-3.9.93.93-3.9L16.862 3.487z" />
-    </svg>
-  );
+  return <IconPencil size={16} stroke={2} aria-hidden="true" />;
 }
 
 function TrashIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M4 7h16" />
-      <path strokeLinecap="round" strokeLinejoin="round" d="M10 11v6" />
-      <path strokeLinecap="round" strokeLinejoin="round" d="M14 11v6" />
-      <path strokeLinecap="round" strokeLinejoin="round" d="M6 7l1 12h10l1-12" />
-      <path strokeLinecap="round" strokeLinejoin="round" d="M9 7V5h6v2" />
-    </svg>
-  );
+  return <IconTrash size={16} stroke={2} aria-hidden="true" />;
 }
 
 function AddModal({ onClose, onSaved }) {
@@ -52,7 +41,7 @@ function AddModal({ onClose, onSaved }) {
             onClick={onClose}
             className="grid h-8 w-8 place-items-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-600 flex-shrink-0"
           >
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            <IconX size={16} stroke={2} aria-hidden="true" />
           </button>
         </div>
 
@@ -139,7 +128,7 @@ function EditModal({ category, onClose, onSaved }) {
             onClick={onClose}
             className="grid h-8 w-8 place-items-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-600 flex-shrink-0"
           >
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            <IconX size={16} stroke={2} aria-hidden="true" />
           </button>
         </div>
 
@@ -231,7 +220,7 @@ export default function Categories({ user }) {
             className="grid h-8 w-8 place-items-center rounded-full bg-[var(--accent)] text-white shadow hover:opacity-90 active:scale-95 transition-transform text-[20px] leading-none flex-shrink-0"
             title="Adaugă categorie"
           >
-            +
+            <IconPlus size={18} stroke={2.2} aria-hidden="true" />
           </button>
         )}
       </div>

@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react';
+import { IconX } from '@tabler/icons-react';
 import api from '../services/api';
+import * as TablerIcons from '@tabler/icons-react';
 
 const TAB_STORAGE = 'storage';
 const TAB_BACKUP = 'backup';
 const TAB_QA = 'qa';
 const TAB_EMAIL = 'email';
+const TAB_ICONS = 'icons';
 
 function InfoBox({ children }) {
   return (
@@ -525,7 +528,7 @@ function QaConnectorTab() {
                   onClick={() => remove(cred.id)}
                   title="Șterge"
                 >
-                  ✕
+                  <IconX size={14} stroke={2.2} aria-hidden="true" />
                 </button>
               </div>
             </div>
@@ -756,6 +759,66 @@ function EmailSettingsTab() {
   );
 }
 
+function IconsTab() {
+  const allIcons = Object.entries(TablerIcons)
+    .filter(([name]) => name.startsWith('Icon'))
+    .sort(([left], [right]) => left.localeCompare(right));
+
+  const ICONS_PER_BATCH = 30;
+  const [visibleCount, setVisibleCount] = useState(ICONS_PER_BATCH);
+
+  useEffect(() => {
+    setVisibleCount(ICONS_PER_BATCH);
+  }, [allIcons.length]);
+
+  const visibleIcons = allIcons.slice(0, visibleCount);
+  const hasMore = visibleCount < allIcons.length;
+
+  const onIconsScroll = (event) => {
+    if (!hasMore) return;
+
+    const { scrollTop, clientHeight, scrollHeight } = event.currentTarget;
+    const nearBottom = scrollTop + clientHeight >= scrollHeight - 120;
+
+    if (nearBottom) {
+      setVisibleCount((prev) => Math.min(prev + ICONS_PER_BATCH, allIcons.length));
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <h2 className="text-lg font-bold text-slate-900">Tabler Icons</h2>
+        <p className="text-[13px] text-slate-500">Toate iconițele disponibile din pachetul @tabler/icons-react.</p>
+      </div>
+
+      <div className="max-h-[62vh] overflow-y-auto pr-1" onScroll={onIconsScroll}>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+          {visibleIcons.map(([name, Icon]) => {
+            const IconComponent = Icon;
+            return (
+              <div key={name} className="rounded-lg border border-slate-200 bg-white p-3">
+                <div className="mb-2 flex h-10 items-center justify-center text-slate-700">
+                  <IconComponent size={22} stroke={1.8} />
+                </div>
+                <p className="truncate text-center text-[11px] font-medium text-slate-600" title={name}>
+                  {name}
+                </p>
+              </div>
+            );
+          })}
+        </div>
+
+        {hasMore && (
+          <p className="py-3 text-center text-[12px] text-slate-500">
+            Scroll pentru mai multe iconițe...
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function Settings() {
   const [tab, setTab] = useState(TAB_STORAGE);
 
@@ -764,6 +827,7 @@ export default function Settings() {
     { id: TAB_EMAIL, label: 'Setări Email' },
     { id: TAB_BACKUP, label: 'Scheduler Backup' },
     { id: TAB_QA, label: 'QA Connector' },
+    { id: TAB_ICONS, label: 'Icons' },
   ];
 
   return (
@@ -790,6 +854,7 @@ export default function Settings() {
         {tab === TAB_EMAIL && <EmailSettingsTab />}
         {tab === TAB_BACKUP && <BackupTab />}
         {tab === TAB_QA && <QaConnectorTab />}
+        {tab === TAB_ICONS && <IconsTab />}
       </div>
     </div>
   );
