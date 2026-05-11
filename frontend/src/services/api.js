@@ -12,7 +12,9 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
+  const locale = localStorage.getItem('expenses:locale') || 'ro';
   const token = localStorage.getItem('token');
+  config.headers['Accept-Language'] = locale;
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }

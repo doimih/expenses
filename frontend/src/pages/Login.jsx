@@ -6,8 +6,11 @@ import {
   IconEyeOff,
   IconFolder,
   IconLock,
+  IconMoon,
+  IconSun,
   IconStarFilled,
 } from '@tabler/icons-react';
+import { useLocale } from '../i18n/LocaleContext';
 
 const emptyRegisterForm = {
   firstName: '',
@@ -17,22 +20,8 @@ const emptyRegisterForm = {
   passwordConfirmation: '',
 };
 
-const FEATURES = [
-  { icon: IconChartPie, text: 'Vizualizare cheltuieli pe categorii și luni' },
-  { icon: IconFolder, text: 'Export și rapoarte lunare automate' },
-  { icon: IconLock, text: 'Date securizate, acces pe roluri' },
-  { icon: IconCloud, text: 'Backup automat în cloud S3' },
-];
-
-const TESTIMONIAL = {
-  initials: 'AM',
-  name: 'Alexandru M.',
-  title: 'Manager financiar, Cluj-Napoca',
-  stars: 5,
-  quote: '"Gestionăm cheltuielile a 3 departamente. Platforma ne-a economisit 6 ore pe săptămână în reconciliere."',
-};
-
-export default function Login({ onLogin, onRegister }) {
+export default function Login({ onLogin, onRegister, theme, onToggleTheme }) {
+  const { locale, toggleLocale, t } = useLocale();
   const [mode, setMode] = useState('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -42,27 +31,57 @@ export default function Login({ onLogin, onRegister }) {
   const [error, setError] = useState('');
   const [agreeTerms, setAgreeTerms] = useState(false);
 
+  const features = locale === 'ro'
+    ? [
+        { icon: IconChartPie, text: 'Vizualizare cheltuieli pe categorii și luni' },
+        { icon: IconFolder, text: 'Export și rapoarte lunare automate' },
+        { icon: IconLock, text: 'Date securizate, acces pe roluri' },
+        { icon: IconCloud, text: 'Backup automat în cloud S3' },
+      ]
+    : [
+        { icon: IconChartPie, text: 'View expenses by categories and months' },
+        { icon: IconFolder, text: 'Automated exports and monthly reports' },
+        { icon: IconLock, text: 'Secure data with role-based access' },
+        { icon: IconCloud, text: 'Automatic cloud S3 backup' },
+      ];
+
+  const testimonial = locale === 'ro'
+    ? {
+        initials: 'AM',
+        name: 'Alexandru M.',
+        title: 'Manager financiar, Cluj-Napoca',
+        stars: 5,
+        quote: '"Gestionăm cheltuielile a 3 departamente. Platforma ne-a economisit 6 ore pe săptămână în reconciliere."',
+      }
+    : {
+        initials: 'AM',
+        name: 'Alexandru M.',
+        title: 'Finance manager, Cluj-Napoca',
+        stars: 5,
+        quote: '"We manage expenses across 3 departments. The platform saved us 6 hours per week in reconciliation."',
+      };
+
   const submitLogin = async (e) => {
     e.preventDefault();
     setError('');
     try {
       await onLogin(email, password);
     } catch (ex) {
-      setError(ex?.response?.data?.message || 'Autentificare eșuată');
+      setError(ex?.response?.data?.message || t('login.loginFailed'));
     }
   };
 
   const submitRegister = async (e) => {
     e.preventDefault();
     setError('');
-    if (!agreeTerms) { setError('Trebuie să accepți Termenii și Condițiile'); return; }
-    if (registerForm.password !== registerForm.passwordConfirmation) { setError('Parolele nu coincid'); return; }
+    if (!agreeTerms) { setError(t('login.agreeTerms')); return; }
+    if (registerForm.password !== registerForm.passwordConfirmation) { setError(t('login.passwordsMismatch')); return; }
     try {
       await onRegister(registerForm);
       setRegisterForm(emptyRegisterForm);
       setAgreeTerms(false);
     } catch (ex) {
-      setError(ex?.response?.data?.message || 'Nu am putut crea contul');
+      setError(ex?.response?.data?.message || t('login.registerFailed'));
     }
   };
 
@@ -73,24 +92,42 @@ export default function Login({ onLogin, onRegister }) {
       {/* ── Left panel ── */}
       <div className="hidden lg:flex lg:w-[45%] flex-col justify-between bg-gradient-to-br from-[#0b1a35] to-[#0d2352] px-14 py-12 text-white">
         {/* Logo */}
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-500 text-white font-bold text-sm">EX</div>
-          <span className="text-[17px] font-semibold tracking-tight">Expenses</span>
+        <div className="space-y-3">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-500 text-white font-bold text-sm">EX</div>
+            <span className="text-[17px] font-semibold tracking-tight">{t('app.expensesBrand')}</span>
+          </div>
+          <button
+            type="button"
+            onClick={toggleLocale}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white transition hover:bg-white/15"
+            aria-label={locale === 'ro' ? t('app.languageEn') : t('app.languageRo')}
+            title={t('common.language')}
+          >
+            <span className="text-[12px] font-semibold leading-none">{locale === 'ro' ? 'E' : 'R'}</span>
+          </button>
+          <button
+            type="button"
+            onClick={onToggleTheme}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white transition hover:bg-white/15"
+            aria-label={theme === 'dark' ? t('app.themeLight') : t('app.themeDark')}
+            title={theme === 'dark' ? t('app.themeLight') : t('app.themeDark')}
+          >
+            {theme === 'dark' ? <IconSun size={16} stroke={2} aria-hidden="true" /> : <IconMoon size={16} stroke={2} aria-hidden="true" />}
+          </button>
         </div>
 
         {/* Headline */}
         <div className="space-y-6">
           <h1 className="text-[38px] leading-tight font-extrabold">
-            Controlul tău financiar,{' '}
-            <span className="text-blue-400">inteligent</span>{' '}
-            și simplu.
+            {t('login.title')}
           </h1>
           <p className="text-[15px] text-slate-300 leading-relaxed max-w-sm">
-            Urmărești cheltuielile, generezi rapoarte și nu mai ratezi niciun termen limită bugetar.
+            {t('login.subtitle')}
           </p>
 
           <ul className="space-y-3 pt-2">
-            {FEATURES.map((f) => (
+            {features.map((f) => (
               <li key={f.text} className="flex items-center gap-3 text-[14px] text-slate-200">
                 <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-[15px]">
                   <f.icon size={15} stroke={2} aria-hidden="true" />
@@ -105,24 +142,45 @@ export default function Login({ onLogin, onRegister }) {
         <div className="rounded-2xl bg-white/10 px-5 py-4 backdrop-blur-sm">
           <div className="flex items-center gap-3 mb-2">
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-500 text-[13px] font-bold text-white">
-              {TESTIMONIAL.initials}
+              {testimonial.initials}
             </div>
             <div>
-              <p className="text-[13px] font-semibold">{TESTIMONIAL.name}</p>
-              <p className="text-[11px] text-slate-400">{TESTIMONIAL.title}</p>
+              <p className="text-[13px] font-semibold">{testimonial.name}</p>
+              <p className="text-[11px] text-slate-400">{testimonial.title}</p>
             </div>
             <div className="ml-auto flex items-center gap-0.5 text-yellow-400 text-[13px]">
-              {Array.from({ length: TESTIMONIAL.stars }, (_, index) => (
+              {Array.from({ length: testimonial.stars }, (_, index) => (
                 <IconStarFilled key={`star-${index}`} size={14} aria-hidden="true" />
               ))}
             </div>
           </div>
-          <p className="text-[13px] text-slate-300 leading-relaxed">{TESTIMONIAL.quote}</p>
+          <p className="text-[13px] text-slate-300 leading-relaxed">{testimonial.quote}</p>
         </div>
       </div>
 
       {/* ── Right panel ── */}
       <div className="flex flex-1 flex-col items-center justify-center px-6 py-12">
+        <div className="mb-4 flex w-full max-w-[400px] justify-end lg:hidden">
+          <button
+            type="button"
+            onClick={toggleLocale}
+            className="mr-2 inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:bg-slate-50"
+            aria-label={locale === 'ro' ? t('app.languageEn') : t('app.languageRo')}
+            title={t('common.language')}
+          >
+            <span className="text-[12px] font-semibold leading-none">{locale === 'ro' ? 'E' : 'R'}</span>
+          </button>
+          <button
+            type="button"
+            onClick={onToggleTheme}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:bg-slate-50"
+            aria-label={theme === 'dark' ? t('app.themeLight') : t('app.themeDark')}
+            title={theme === 'dark' ? t('app.themeLight') : t('app.themeDark')}
+          >
+            {theme === 'dark' ? <IconSun size={16} stroke={2} aria-hidden="true" /> : <IconMoon size={16} stroke={2} aria-hidden="true" />}
+          </button>
+        </div>
+
         {/* Pill tabs */}
         <div className="mb-8 flex rounded-full border border-slate-200 bg-white p-1 shadow-sm">
           <button
@@ -130,14 +188,14 @@ export default function Login({ onLogin, onRegister }) {
             onClick={() => switchMode('login')}
             className={`rounded-full px-6 py-2 text-[14px] font-semibold transition ${mode === 'login' ? 'bg-blue-600 text-white shadow' : 'text-slate-500 hover:text-slate-700'}`}
           >
-            Log In
+            {t('login.signIn')}
           </button>
           <button
             type="button"
             onClick={() => switchMode('register')}
             className={`rounded-full px-6 py-2 text-[14px] font-semibold transition ${mode === 'register' ? 'bg-blue-600 text-white shadow' : 'text-slate-500 hover:text-slate-700'}`}
           >
-            Create Account
+            {t('login.register')}
           </button>
         </div>
 
@@ -145,27 +203,27 @@ export default function Login({ onLogin, onRegister }) {
         <div className="w-full max-w-[400px] rounded-2xl bg-white px-8 py-8 shadow-md">
           {mode === 'login' ? (
             <>
-              <h2 className="text-[22px] font-bold text-slate-900">Welcome back</h2>
-              <p className="mt-0.5 text-[13px] text-slate-500">Sign in to your Expenses account</p>
+              <h2 className="text-[22px] font-bold text-slate-900">{t('login.signIn')}</h2>
+              <p className="mt-0.5 text-[13px] text-slate-500">{locale === 'ro' ? 'Intră în contul Expenses' : 'Sign in to your Expenses account'}</p>
 
               <form className="mt-6 space-y-4" onSubmit={submitLogin}>
                 <div>
-                  <label className="block text-[13px] font-medium text-slate-700 mb-1">Email address</label>
+                  <label className="block text-[13px] font-medium text-slate-700 mb-1">{t('login.emailOrUser')}</label>
                   <input
-                    type="email"
-                    autoComplete="email"
+                    type="text"
+                    autoComplete="username"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="email@exemplu.com"
+                    placeholder="uservisit"
                     className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-[14px] text-slate-900 placeholder-slate-400 outline-none focus:border-blue-400 focus:bg-white transition"
                   />
                 </div>
 
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <label className="text-[13px] font-medium text-slate-700">Password</label>
-                    <button type="button" tabIndex={-1} className="text-[12px] text-blue-600 hover:underline">Forgot password?</button>
+                    <label className="text-[13px] font-medium text-slate-700">{t('login.password')}</label>
+                    <button type="button" tabIndex={-1} className="text-[12px] text-blue-600 hover:underline">{t('login.forgotPassword')}</button>
                   </div>
                   <div className="relative">
                     <input
@@ -198,26 +256,37 @@ export default function Login({ onLogin, onRegister }) {
                   type="submit"
                   className="mt-2 w-full rounded-lg bg-blue-600 py-2.5 text-[14px] font-semibold text-white hover:bg-blue-700 transition"
                 >
-                  Sign In
+                  {t('login.signInButton')}
                 </button>
 
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                  <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-slate-500">{t('login.visitorCardTitle')}</p>
+                  <div className="mt-2 space-y-1 text-[13px] text-slate-700">
+                    <p><span className="font-semibold text-slate-900">{t('login.visitorCardUser')}:</span> uservisit</p>
+                    <p><span className="font-semibold text-slate-900">{t('login.visitorCardPassword')}:</span> Temp123!</p>
+                  </div>
+                  <p className="mt-2 text-[12px] leading-relaxed text-slate-500">
+                    {t('login.visitorCardHelp')}
+                  </p>
+                </div>
+
                 <p className="text-center text-[13px] text-slate-500">
-                  Don't have an account?{' '}
+                  {t('login.noAccount')}{' '}
                   <button type="button" onClick={() => switchMode('register')} className="font-semibold text-blue-600 hover:underline">
-                    Create one
+                    {t('login.createOne')}
                   </button>
                 </p>
               </form>
             </>
           ) : (
             <>
-              <h2 className="text-[22px] font-bold text-slate-900">Create account</h2>
-              <p className="mt-0.5 text-[13px] text-slate-500">Înregistrează-te pentru acces la platformă</p>
+              <h2 className="text-[22px] font-bold text-slate-900">{t('login.createAccount')}</h2>
+              <p className="mt-0.5 text-[13px] text-slate-500">{t('login.registerSubtitle')}</p>
 
               <form className="mt-6 space-y-4" onSubmit={submitRegister}>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-[13px] font-medium text-slate-700 mb-1">Prenume</label>
+                    <label className="block text-[13px] font-medium text-slate-700 mb-1">{t('login.firstName')}</label>
                     <input
                       required
                       value={registerForm.firstName}
@@ -227,7 +296,7 @@ export default function Login({ onLogin, onRegister }) {
                     />
                   </div>
                   <div>
-                    <label className="block text-[13px] font-medium text-slate-700 mb-1">Nume</label>
+                    <label className="block text-[13px] font-medium text-slate-700 mb-1">{t('login.lastName')}</label>
                     <input
                       required
                       value={registerForm.lastName}
@@ -239,7 +308,7 @@ export default function Login({ onLogin, onRegister }) {
                 </div>
 
                 <div>
-                  <label className="block text-[13px] font-medium text-slate-700 mb-1">Email address</label>
+                  <label className="block text-[13px] font-medium text-slate-700 mb-1">Email</label>
                   <input
                     type="email"
                     autoComplete="email"
@@ -252,7 +321,7 @@ export default function Login({ onLogin, onRegister }) {
                 </div>
 
                 <div>
-                  <label className="block text-[13px] font-medium text-slate-700 mb-1">Password</label>
+                  <label className="block text-[13px] font-medium text-slate-700 mb-1">{t('login.password')}</label>
                   <div className="relative">
                     <input
                       type={showRegisterPassword ? 'text' : 'password'}
@@ -275,7 +344,7 @@ export default function Login({ onLogin, onRegister }) {
                 </div>
 
                 <div>
-                  <label className="block text-[13px] font-medium text-slate-700 mb-1">Confirm Password</label>
+                  <label className="block text-[13px] font-medium text-slate-700 mb-1">Confirmare parolă</label>
                   <input
                     type="password"
                     autoComplete="new-password"
@@ -307,13 +376,13 @@ export default function Login({ onLogin, onRegister }) {
                   type="submit"
                   className="mt-2 w-full rounded-lg bg-blue-600 py-2.5 text-[14px] font-semibold text-white hover:bg-blue-700 transition"
                 >
-                  Create Account
+                  {t('login.createAccount')}
                 </button>
 
                 <p className="text-center text-[13px] text-slate-500">
-                  Ai deja cont?{' '}
+                  {locale === 'ro' ? 'Ai deja cont?' : 'Already have an account?'}{' '}
                   <button type="button" onClick={() => switchMode('login')} className="font-semibold text-blue-600 hover:underline">
-                    Sign In
+                    {t('login.signIn')}
                   </button>
                 </p>
               </form>
@@ -322,10 +391,10 @@ export default function Login({ onLogin, onRegister }) {
         </div>
 
         <p className="mt-6 text-center text-[12px] text-slate-400">
-          By continuing, you agree to our{' '}
-          <a href="#" className="hover:underline">Terms of Service</a>{' '}
-          and{' '}
-          <a href="#" className="hover:underline">Privacy Policy</a>.
+          {locale === 'ro' ? 'Continuând, ești de acord cu' : 'By continuing, you agree to our'}{' '}
+          <a href="#" className="hover:underline">{locale === 'ro' ? 'Termenii și Condițiile' : 'Terms of Service'}</a>{' '}
+          {locale === 'ro' ? 'și' : 'and'}{' '}
+          <a href="#" className="hover:underline">{locale === 'ro' ? 'Politica de confidențialitate' : 'Privacy Policy'}</a>.
         </p>
       </div>
     </div>

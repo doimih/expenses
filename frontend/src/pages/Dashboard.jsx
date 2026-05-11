@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useEffect, useMemo, useState } from 'react';
+import { useLocale } from '../i18n/LocaleContext';
 import PieChart from '../components/charts/PieChart';
 import BarChart from '../components/charts/BarChart';
 import {
@@ -33,8 +34,8 @@ const budgetDefaults = {
   Other: 300,
 };
 
-function formatMoney(value) {
-  return `RON ${Number(value || 0).toLocaleString('ro-RO', { maximumFractionDigits: 0 })}`;
+function formatMoney(value, localeCode = 'ro-RO') {
+  return `RON ${Number(value || 0).toLocaleString(localeCode, { maximumFractionDigits: 0 })}`;
 }
 
 function formatPercent(value) {
@@ -46,28 +47,30 @@ function formatPercent(value) {
   return `${value >= 0 ? '↑' : '↓'} ${rounded}%`;
 }
 
-function monthLabel(month) {
+function monthLabel(month, locale = 'ro') {
   const [year, mm] = month.split('-').map(Number);
-  const monthNames = ['ianuarie', 'februarie', 'martie', 'aprilie', 'mai', 'iunie', 'iulie', 'august', 'septembrie', 'octombrie', 'noiembrie', 'decembrie'];
+  const monthNames = locale === 'ro'
+    ? ['ianuarie', 'februarie', 'martie', 'aprilie', 'mai', 'iunie', 'iulie', 'august', 'septembrie', 'octombrie', 'noiembrie', 'decembrie']
+    : ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   return `${monthNames[mm - 1]} ${year}`;
 }
 
-function timeAgo(value) {
+function timeAgo(value, locale = 'ro') {
   const date = new Date(value);
   const diffMs = Date.now() - date.getTime();
   const minutes = Math.floor(diffMs / 60000);
 
   if (minutes < 60) {
-    return `${Math.max(minutes, 1)} min ago`;
+    return locale === 'ro' ? `acum ${Math.max(minutes, 1)} min` : `${Math.max(minutes, 1)} min ago`;
   }
 
   const hours = Math.floor(minutes / 60);
   if (hours < 24) {
-    return `${hours} hr ago`;
+    return locale === 'ro' ? `acum ${hours} ore` : `${hours} hr ago`;
   }
 
   const days = Math.floor(hours / 24);
-  return `${days} day${days === 1 ? '' : 's'} ago`;
+  return locale === 'ro' ? `acum ${days} zi${days === 1 ? '' : 'le'}` : `${days} day${days === 1 ? '' : 's'} ago`;
 }
 
 function normalizeCategory(name = '') {
@@ -127,7 +130,36 @@ function MetricCard({ label, value, delta, deltaTone = 'success', iconType = 'mo
 }
 
 function AdminDashboard({ month }) {
+  const { locale } = useLocale();
   const [overview, setOverview] = useState(null);
+  const numberLocale = locale === 'ro' ? 'ro-RO' : 'en-US';
+  const L = locale === 'ro'
+    ? {
+        all: 'Toate',
+        active: 'Active',
+        admin: 'Admin',
+        users: 'Utilizatori',
+        activity: 'Jurnal activitate',
+        viewAll: 'Vezi tot',
+        user: 'Utilizator',
+        role: 'Rol',
+        status: 'Status',
+        title: 'Tablou de bord admin',
+        loading: 'Se încarcă dashboard-ul admin...',
+      }
+    : {
+        all: 'All',
+        active: 'Active',
+        admin: 'Admin',
+        users: 'Users',
+        activity: 'Activity log',
+        viewAll: 'View all',
+        user: 'User',
+        role: 'Role',
+        status: 'Status',
+        title: 'Admin dashboard',
+        loading: 'Loading admin dashboard...',
+      };
 
   useEffect(() => {
     api.get(`/reports/admin-overview?month=${month}`).then(({ data }) => setOverview(data));
@@ -148,28 +180,28 @@ function AdminDashboard({ month }) {
   }, [overview, filter]);
 
   if (!overview) {
-    return <div className="app-panel p-6 text-[14px] text-slate-500">Loading admin dashboard...</div>;
+    return <div className="app-panel p-6 text-[14px] text-slate-500">{L.loading}</div>;
   }
 
   return (
     <div className="space-y-4">
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-        <MetricCard label="Total users" value={overview.stats.total_users.toLocaleString('ro-RO')} delta="↑ 12% this month" />
-        <MetricCard label="Total expenses" value={overview.stats.total_expenses.toLocaleString('ro-RO')} delta="↑ 8% vs last month" />
-        <MetricCard label="Monthly volume" value={formatMoney(overview.stats.monthly_volume)} delta="↓ 3% this month" deltaTone="danger" />
-        <MetricCard label="Categories" value={overview.stats.categories_count.toLocaleString('ro-RO')} delta="Active globally" />
+        <MetricCard label={locale === 'ro' ? 'Total utilizatori' : 'Total users'} value={overview.stats.total_users.toLocaleString(numberLocale)} delta={locale === 'ro' ? '↑ 12% luna aceasta' : '↑ 12% this month'} />
+        <MetricCard label={locale === 'ro' ? 'Total cheltuieli' : 'Total expenses'} value={overview.stats.total_expenses.toLocaleString(numberLocale)} delta={locale === 'ro' ? '↑ 8% față de luna trecută' : '↑ 8% vs last month'} />
+        <MetricCard label={locale === 'ro' ? 'Volum lunar' : 'Monthly volume'} value={formatMoney(overview.stats.monthly_volume, numberLocale)} delta={locale === 'ro' ? '↓ 3% luna aceasta' : '↓ 3% this month'} deltaTone="danger" />
+        <MetricCard label={locale === 'ro' ? 'Categorii' : 'Categories'} value={overview.stats.categories_count.toLocaleString(numberLocale)} delta={locale === 'ro' ? 'Active global' : 'Active globally'} />
       </div>
 
       <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
         <section className="app-panel overflow-hidden">
           <div className="flex items-center justify-between border-b border-black/5 px-5 py-4">
             <div className="flex items-center gap-3">
-              <h2 className="panel-title">Users</h2>
+              <h2 className="panel-title">{L.users}</h2>
               <div className="flex items-center gap-2 rounded-full bg-stone-100 p-1 text-[12px]">
                 {[
-                  { id: 'all', label: 'All' },
-                  { id: 'active', label: 'Active' },
-                  { id: 'admin', label: 'Admin' },
+                  { id: 'all', label: L.all },
+                  { id: 'active', label: L.active },
+                  { id: 'admin', label: L.admin },
                 ].map((item) => (
                   <button
                     key={item.id}
@@ -182,13 +214,13 @@ function AdminDashboard({ month }) {
                 ))}
               </div>
             </div>
-            <Link to="/users" className="rounded-xl border border-black/10 px-4 py-2 text-[13px] font-medium text-slate-700">View all</Link>
+            <Link to="/users" className="rounded-xl border border-black/10 px-4 py-2 text-[13px] font-medium text-slate-700">{L.viewAll}</Link>
           </div>
 
           <div className="grid grid-cols-[1.5fr_0.8fr_0.6fr] gap-3 border-b border-black/5 px-5 py-3 text-[11px] font-medium uppercase tracking-[0.14em] text-slate-500">
-            <span>User</span>
-            <span>Role</span>
-            <span>Status</span>
+            <span>{L.user}</span>
+            <span>{L.role}</span>
+            <span>{L.status}</span>
           </div>
 
           <div>
@@ -214,8 +246,8 @@ function AdminDashboard({ month }) {
 
         <section className="app-panel overflow-hidden">
           <div className="flex items-center justify-between border-b border-black/5 px-5 py-4">
-            <h2 className="panel-title">Activity log</h2>
-            <button className="rounded-xl border border-black/10 px-4 py-2 text-[13px] font-medium text-slate-700">View all</button>
+            <h2 className="panel-title">{L.activity}</h2>
+            <button className="rounded-xl border border-black/10 px-4 py-2 text-[13px] font-medium text-slate-700">{L.viewAll}</button>
           </div>
           <div>
             {overview.activity.map((item, index) => (
@@ -229,7 +261,7 @@ function AdminDashboard({ month }) {
                 <div className="min-w-0 flex-1">
                   <p className="font-medium text-slate-900">{item.title}</p>
                   <p className="text-[13px] text-slate-600">{item.description}</p>
-                  <p className="micro-copy mt-1">{timeAgo(item.timestamp)} · {typeof item.meta === 'string' && item.meta.includes('@') ? item.meta : 'system'}</p>
+                  <p className="micro-copy mt-1">{timeAgo(item.timestamp, locale)} · {typeof item.meta === 'string' && item.meta.includes('@') ? item.meta : (locale === 'ro' ? 'sistem' : 'system')}</p>
                 </div>
               </div>
             ))}
@@ -241,6 +273,8 @@ function AdminDashboard({ month }) {
 }
 
 export default function Dashboard({ user }) {
+  const { locale } = useLocale();
+  const numberLocale = locale === 'ro' ? 'ro-RO' : 'en-US';
   const [month, setMonth] = useState(currentMonth());
   const [report, setReport] = useState(null);
   const [expenses, setExpenses] = useState([]);
@@ -294,8 +328,8 @@ export default function Dashboard({ user }) {
     <div className="space-y-4">
       <div className="flex flex-col justify-between gap-4 rounded-[20px] border border-black/5 bg-white px-5 py-5 md:flex-row md:items-start">
         <div>
-          <h2 className="text-[16px] font-medium text-slate-900">Bun venit, {user?.first_name || user?.name || 'Andrei'} 👋</h2>
-          <p className="mt-1 text-[14px] text-slate-500">Here's your financial overview for {monthLabel(month)}</p>
+          <h2 className="text-[16px] font-medium text-slate-900">{locale === 'ro' ? 'Bun venit' : 'Welcome'}, {user?.first_name || user?.name || 'Andrei'} 👋</h2>
+          <p className="mt-1 text-[14px] text-slate-500">{locale === 'ro' ? 'Aici este situația ta financiară pentru' : 'Here is your financial overview for'} {monthLabel(month, locale)}</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex rounded-xl border border-black/10 bg-white p-1 text-[13px]">
@@ -317,16 +351,16 @@ export default function Dashboard({ user }) {
       {report && (
         <>
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            <MetricCard iconType="money" label="This month" value={formatMoney(currentTotal)} delta={`${formatPercent(delta)} vs last month`} deltaTone={delta > 0 ? 'danger' : 'success'} />
-            <MetricCard iconType="cal" label="Last month" value={formatMoney(previousTotal)} delta="↑ 5% vs previous" />
-            <MetricCard iconType="tx" label="Transactions" value={transactionCount.toLocaleString('ro-RO')} delta={`+${Math.max(transactionCount - Math.round(transactionCount * 0.8), 0)} vs last month`} />
-            <MetricCard iconType="trend" label="Avg. per day" value={formatMoney(avgPerDay)} delta={`${formatPercent(delta / 2)} vs avg`} deltaTone={delta > 0 ? 'danger' : 'success'} />
+            <MetricCard iconType="money" label={locale === 'ro' ? 'Luna aceasta' : 'This month'} value={formatMoney(currentTotal, numberLocale)} delta={`${formatPercent(delta)} ${locale === 'ro' ? 'față de luna trecută' : 'vs last month'}`} deltaTone={delta > 0 ? 'danger' : 'success'} />
+            <MetricCard iconType="cal" label={locale === 'ro' ? 'Luna trecută' : 'Last month'} value={formatMoney(previousTotal, numberLocale)} delta={locale === 'ro' ? '↑ 5% față de perioada anterioară' : '↑ 5% vs previous'} />
+            <MetricCard iconType="tx" label={locale === 'ro' ? 'Tranzacții' : 'Transactions'} value={transactionCount.toLocaleString(numberLocale)} delta={`+${Math.max(transactionCount - Math.round(transactionCount * 0.8), 0)} ${locale === 'ro' ? 'față de luna trecută' : 'vs last month'}`} />
+            <MetricCard iconType="trend" label={locale === 'ro' ? 'Medie/zi' : 'Avg. per day'} value={formatMoney(avgPerDay, numberLocale)} delta={`${formatPercent(delta / 2)} ${locale === 'ro' ? 'față de medie' : 'vs avg'}`} deltaTone={delta > 0 ? 'danger' : 'success'} />
           </div>
 
           <div className="grid gap-4 xl:grid-cols-[0.78fr_1.22fr]">
             <section className="app-panel overflow-hidden">
               <div className="border-b border-black/5 px-4 py-4">
-                <h3 className="panel-title">By category</h3>
+                <h3 className="panel-title">{locale === 'ro' ? 'Pe categorii' : 'By category'}</h3>
               </div>
               <div className="p-4">
                 <div className="mx-auto max-w-[220px]">
@@ -353,17 +387,17 @@ export default function Dashboard({ user }) {
 
             <section className="app-panel overflow-hidden">
               <div className="flex items-center justify-between border-b border-black/5 px-4 py-4">
-                <h3 className="panel-title">Last 6 months</h3>
-                <span className="text-[13px] text-slate-500">Monthly spend</span>
+                <h3 className="panel-title">{locale === 'ro' ? 'Ultimele 6 luni' : 'Last 6 months'}</h3>
+                <span className="text-[13px] text-slate-500">{locale === 'ro' ? 'Cheltuieli lunare' : 'Monthly spend'}</span>
               </div>
               <div className="p-4">
                 <BarChart
                   data={{
                     labels: (report.charts.bar.labels || []).map((l) =>
-                      new Date(`${l}-01`).toLocaleDateString('ro-RO', { month: 'short' })
+                      new Date(`${l}-01`).toLocaleDateString(numberLocale, { month: 'short' })
                     ),
                     datasets: [{
-                      label: 'Cheltuieli',
+                      label: locale === 'ro' ? 'Cheltuieli' : 'Expenses',
                       data: report.charts.bar.datasets[0].data.map(Number),
                       backgroundColor: 'rgba(99,102,241,0.8)',
                       borderRadius: 6,
@@ -372,10 +406,10 @@ export default function Dashboard({ user }) {
                   }}
                   options={{
                     responsive: true,
-                    plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => ` RON ${ctx.parsed.y.toLocaleString('ro-RO')}` } } },
+                    plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => ` RON ${ctx.parsed.y.toLocaleString(numberLocale)}` } } },
                     scales: {
                       x: { grid: { display: false }, ticks: { font: { size: 12 } } },
-                      y: { grid: { color: '#f1f5f9' }, ticks: { font: { size: 11 }, callback: (v) => `${v.toLocaleString('ro-RO')}` } },
+                      y: { grid: { color: '#f1f5f9' }, ticks: { font: { size: 11 }, callback: (v) => `${v.toLocaleString(numberLocale)}` } },
                     },
                   }}
                 />
@@ -386,8 +420,8 @@ export default function Dashboard({ user }) {
           <div className="grid gap-4 xl:grid-cols-[1.3fr_0.7fr]">
             <section className="app-panel overflow-hidden">
               <div className="flex items-center justify-between border-b border-black/5 px-5 py-4">
-                <h3 className="panel-title">Recent expenses</h3>
-                <Link to="/expenses" className="text-[13px] font-medium text-[var(--accent)]">View all →</Link>
+                <h3 className="panel-title">{locale === 'ro' ? 'Cheltuieli recente' : 'Recent expenses'}</h3>
+                <Link to="/expenses" className="text-[13px] font-medium text-[var(--accent)]">{locale === 'ro' ? 'Vezi tot →' : 'View all →'}</Link>
               </div>
               <div>
                 {expenses.slice(0, 4).map((expense) => (
@@ -397,7 +431,7 @@ export default function Dashboard({ user }) {
                         <CategoryIcon name={expense.category?.name} color={expense.category?.color || '#6366f1'} size={17} />
                       </span>
                       <div>
-                        <p className="font-medium text-slate-900">{expense.description || `${expense.category?.name} expense`}</p>
+                        <p className="font-medium text-slate-900">{expense.description || `${expense.category?.name} ${locale === 'ro' ? 'cheltuială' : 'expense'}`}</p>
                         <p className="text-[13px] text-slate-500">{expense.category?.name} · {expense.date}</p>
                       </div>
                     </div>
@@ -409,7 +443,7 @@ export default function Dashboard({ user }) {
 
             <section className="app-panel overflow-hidden">
               <div className="border-b border-black/5 px-5 py-4">
-                <h3 className="panel-title">Budget progress</h3>
+                <h3 className="panel-title">{locale === 'ro' ? 'Progres buget' : 'Budget progress'}</h3>
               </div>
               <div className="space-y-4 p-5">
                 {categoryBreakdown.map((category) => {
@@ -427,7 +461,7 @@ export default function Dashboard({ user }) {
                           </span>
                           <span>{category.name}</span>
                         </span>
-                        <span className="text-slate-500">{Number(category.total).toLocaleString('ro-RO')} / {Math.round(category.limit).toLocaleString('ro-RO')}</span>
+                        <span className="text-slate-500">{Number(category.total).toLocaleString(numberLocale)} / {Math.round(category.limit).toLocaleString(numberLocale)}</span>
                       </div>
                       <div className="h-2 rounded-full bg-stone-100">
                         <div className="h-2 rounded-full" style={{ width: `${Math.min(progress, 100)}%`, background: tone }} />
@@ -437,9 +471,9 @@ export default function Dashboard({ user }) {
                 })}
 
                 <div className="border-t border-black/5 pt-4">
-                  <p className="text-[13px] text-slate-500">Overall budget</p>
-                  <p className="mt-2 text-[18px] font-medium text-slate-900">{formatMoney(currentTotal)} <span className="text-[14px] text-slate-500">/ {overallBudget.toLocaleString('ro-RO', { maximumFractionDigits: 0 })}</span></p>
-                  <p className="mt-1 text-[13px] text-[var(--warning)]">{Math.round((currentTotal / Math.max(overallBudget, 1)) * 100)}% used — 25 days left</p>
+                  <p className="text-[13px] text-slate-500">{locale === 'ro' ? 'Buget total' : 'Overall budget'}</p>
+                  <p className="mt-2 text-[18px] font-medium text-slate-900">{formatMoney(currentTotal, numberLocale)} <span className="text-[14px] text-slate-500">/ {overallBudget.toLocaleString(numberLocale, { maximumFractionDigits: 0 })}</span></p>
+                  <p className="mt-1 text-[13px] text-[var(--warning)]">{Math.round((currentTotal / Math.max(overallBudget, 1)) * 100)}% {locale === 'ro' ? 'folosit' : 'used'} — {locale === 'ro' ? '25 de zile rămase' : '25 days left'}</p>
                 </div>
               </div>
             </section>

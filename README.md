@@ -1,6 +1,14 @@
 # Expenses Manager
 
-Expenses Manager is a Dockerized full-stack app for personal/team expense tracking, with token-based auth, category management, monthly reports, and a PWA frontend.
+Expenses Manager is a Dockerized full-stack app for personal/team expense tracking, with token-based auth, category management, monthly reports, localized Romanian/English UI, and a PWA frontend.
+
+## Current Highlights
+
+- Bilingual UI with persistent Romanian/English switching
+- Light/dark theme toggle on login and app shell
+- Visitor demo account with read-only access
+- System activity logs plus a dedicated platform error log page
+- PWA-friendly layout with cached assets and reset-cache action
 
 ## Dev Stack
 
@@ -132,12 +140,32 @@ Base path locally: `http://localhost:18000/api`
 
 ### Reports *(auth:sanctum)*
 - `GET /api/reports/monthly?month=YYYY-MM`
+- `GET /api/reports/admin-overview?month=YYYY-MM&page=N&per_page=50`
+- `GET /api/reports/platform-errors?month=YYYY-MM&page=N&per_page=50`
 
 ### User Management *(superadmin only, auth:sanctum)*
 - `GET /api/users`
 - `POST /api/users`
 - `PUT /api/users/{user}/password`
 - `PATCH /api/users/{user}/superadmin`
+
+### Settings *(superadmin only, auth:sanctum)*
+- `GET /api/settings/storage`
+- `PUT /api/settings/storage`
+- `POST /api/settings/storage/test`
+- `GET /api/settings/email`
+- `PUT /api/settings/email`
+- `DELETE /api/settings/email`
+- `POST /api/settings/email/test`
+- `GET /api/settings/backup/scheduler`
+- `PUT /api/settings/backup/scheduler`
+- `POST /api/settings/backup/run`
+- `GET /api/settings/backup/history`
+- `POST /api/settings/backup/restore/{id}`
+- `GET /api/settings/qa-connector`
+- `POST /api/settings/qa-connector`
+- `POST /api/settings/qa-connector/{id}/rotate`
+- `DELETE /api/settings/qa-connector/{id}`
 
 ## Authentication
 
@@ -168,6 +196,10 @@ The frontend stores the token in `localStorage` and injects it via Axios request
 - Expenses
 - Categories
 - Users (admin operations)
+- Expense list
+- System logs
+- Platform errors
+- Settings
 
 ## Common Commands
 

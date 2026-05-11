@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\EmailSetting;
+use App\Support\LocalizedMessage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -66,7 +67,7 @@ class EmailSettingController extends Controller
         EmailSetting::query()->delete();
 
         return response()->json([
-            'message' => 'Email settings deleted',
+            'message' => LocalizedMessage::text('Setările email au fost șterse.', 'Email settings deleted.', $request),
         ]);
     }
 
@@ -88,7 +89,7 @@ class EmailSettingController extends Controller
 
         if (isset($payload['active']) && ! $payload['active']) {
             return response()->json([
-                'message' => 'Email is disabled. Enable it before sending a test email.',
+                'message' => LocalizedMessage::text('Emailul este dezactivat. Activează-l înainte de a trimite un email de test.', 'Email is disabled. Enable it before sending a test email.', $request),
             ], 422);
         }
 
@@ -108,18 +109,18 @@ class EmailSettingController extends Controller
         ]);
 
         try {
-            Mail::raw('This is a test email from Expenses settings.', function ($message) use ($payload) {
+            Mail::raw(LocalizedMessage::text('Acesta este un email de test din setările Expenses.', 'This is a test email from Expenses settings.', $request), function ($message) use ($payload) {
                 $message
                     ->to($payload['monitoring_alert_recipient'])
-                    ->subject('Expenses - test email');
+                    ->subject(LocalizedMessage::text('Expenses - email de test', 'Expenses - test email', $request));
             });
 
             return response()->json([
-                'message' => 'Test email sent successfully.',
+                'message' => LocalizedMessage::text('Emailul de test a fost trimis cu succes.', 'Test email sent successfully.', $request),
             ]);
         } catch (Throwable $e) {
             return response()->json([
-                'message' => 'Failed to send test email: '.$e->getMessage(),
+                'message' => LocalizedMessage::text('Trimiterea emailului de test a eșuat: ', 'Failed to send test email: ', $request).$e->getMessage(),
             ], 422);
         }
     }

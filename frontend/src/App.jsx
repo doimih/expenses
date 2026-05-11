@@ -1,29 +1,33 @@
 import { Navigate, NavLink, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { IconMoon, IconSun } from '@tabler/icons-react';
 import { useAuth } from './hooks/useAuth';
 import { usePushNotifications } from './hooks/usePushNotifications';
+import { LocaleProvider, useLocale } from './i18n/LocaleContext';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Categories from './pages/Categories';
 import Expenses from './pages/Expenses';
 import ExpenseList from './pages/ExpenseList';
 import Settings from './pages/Settings';
+import PlatformErrors from './pages/PlatformErrors';
 import SystemLogs from './pages/SystemLogs';
 import Users from './pages/Users';
 
 const adminNavItems = [
-  { to: '/', label: 'Dashboard', section: 'Overview' },
-  { to: '/users', label: 'Users', section: 'Management' },
-  { to: '/expenses', label: 'Expenses', section: 'Management' },
-  { to: '/categories', label: 'Categories', section: 'Management' },
-  { to: '/system-logs', label: 'System logs', section: 'System' },
-  { to: '/settings', label: 'Settings', section: 'System' },
+  { to: '/', labelKey: 'app.dashboard', sectionKey: 'shell.overview' },
+  { to: '/users', labelKey: 'app.users', sectionKey: 'shell.management' },
+  { to: '/expenses', labelKey: 'app.expenses', sectionKey: 'shell.management' },
+  { to: '/categories', labelKey: 'app.categories', sectionKey: 'shell.management' },
+  { to: '/system-logs', labelKey: 'app.systemLogs', sectionKey: 'shell.system' },
+  { to: '/platform-errors', labelKey: 'app.platformErrors', sectionKey: 'shell.system' },
+  { to: '/settings', labelKey: 'app.settings', sectionKey: 'shell.system' },
 ];
 
 const userNavItems = [
-  { to: '/dashboard', label: 'Dashboard' },
-  { to: '/expenses', label: 'Expenses' },
-  { to: '/categories', label: 'Categories' },
+  { to: '/dashboard', labelKey: 'app.dashboard' },
+  { to: '/expenses', labelKey: 'app.expenses' },
+  { to: '/categories', labelKey: 'app.categories' },
 ];
 
 const THEME_STORAGE_KEY = 'expenses:theme';
@@ -38,6 +42,7 @@ function getUserLabel(user) {
 }
 
 function BottomNav({ items }) {
+  const { t } = useLocale();
   const location = useLocation();
 
   return (
@@ -51,7 +56,7 @@ function BottomNav({ items }) {
               to={item.to}
               className={`nav-pill justify-center ${isActive ? 'nav-pill-active' : 'text-slate-500'}`}
             >
-              {item.label}
+              {t(item.labelKey)}
             </NavLink>
           );
         })}
@@ -61,11 +66,12 @@ function BottomNav({ items }) {
 }
 
 function AdminLayout({ children, onLogout, onToggleTheme, theme, user }) {
+  const { t, locale, toggleLocale } = useLocale();
   const location = useLocation();
   const navigate = useNavigate();
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 
-  const sectionOrder = ['Overview', 'Management', 'System'];
+  const sectionOrder = ['overview', 'management', 'system'];
 
   const resetAppCache = async () => {
     if ('serviceWorker' in navigator) {
@@ -88,17 +94,17 @@ function AdminLayout({ children, onLogout, onToggleTheme, theme, user }) {
           <div className="flex items-center gap-3 border-b border-black/5 px-5 py-5">
             <span className="grid h-8 w-8 place-items-center rounded-full bg-[var(--accent-soft)] text-sm font-semibold text-[var(--accent)]">E</span>
             <div>
-              <p className="text-lg font-medium text-slate-900">Expenses</p>
-              <span className="tag-chip">ADMIN</span>
+              <p className="text-lg font-medium text-slate-900">{t('app.expensesBrand')}</p>
+              <span className="tag-chip">{t('app.adminTag')}</span>
             </div>
           </div>
 
           <div className="space-y-6 px-4 py-5">
             {sectionOrder.map((section) => {
-              const items = adminNavItems.filter((item) => item.section === section);
+              const items = adminNavItems.filter((item) => item.sectionKey === `shell.${section}`);
               return (
                 <div key={section} className="space-y-3">
-                  <p className="panel-label">{section}</p>
+                  <p className="panel-label">{t(`shell.${section}`)}</p>
                   <nav className="space-y-1">
                     {items.map((item) => {
                       const isActive = location.pathname === item.to;
@@ -108,8 +114,8 @@ function AdminLayout({ children, onLogout, onToggleTheme, theme, user }) {
                           to={item.to}
                           className={`flex items-center justify-between rounded-xl px-3 py-3 text-[14px] transition ${isActive ? 'bg-[var(--accent-soft)] text-[var(--accent)]' : 'text-slate-700 hover:bg-stone-50'}`}
                         >
-                          <span>{item.label}</span>
-                          {item.label === 'Users' && <span className="rounded-full border border-black/5 px-2 py-0.5 text-[11px] text-slate-500">live</span>}
+                          <span>{t(item.labelKey)}</span>
+                          {item.labelKey === 'app.users' && <span className="rounded-full border border-black/5 px-2 py-0.5 text-[11px] text-slate-500">{t('app.liveBadge')}</span>}
                         </NavLink>
                       );
                     })}
@@ -164,21 +170,39 @@ function AdminLayout({ children, onLogout, onToggleTheme, theme, user }) {
 
       <main className="min-w-0 p-4 pb-24 md:ml-[208px] md:p-0 md:pb-0">
         <div className="mx-auto flex min-h-screen max-w-[1120px] flex-col gap-4 md:p-4">
-          <header className="app-panel flex flex-wrap items-center justify-between gap-3 px-5 py-4">
-            <div>
-              <h1 className="text-[15px] font-medium leading-tight text-slate-900">Admin dashboard</h1>
+          <header className="app-panel flex flex-col items-center gap-3 px-5 py-4 md:sticky md:top-4 md:z-30 md:flex-row md:items-center md:justify-between md:gap-4">
+            <div className="min-w-0 w-full flex-1 text-center md:w-auto md:text-left">
+              <h1 className="whitespace-nowrap text-[15px] font-medium leading-tight text-slate-900 md:text-[16px]">{t('shell.dashboardTitle')}</h1>
             </div>
-            <div className="flex flex-1 flex-wrap items-center justify-end gap-3">
+            <div className="flex w-full items-center justify-center gap-2 whitespace-nowrap overflow-x-auto pb-1 md:w-auto md:justify-end md:overflow-visible md:pb-0">
+              <button
+                type="button"
+                onClick={toggleLocale}
+                className="icon-button"
+                title={locale === 'ro' ? t('common.language') : t('common.language')}
+                aria-label={locale === 'ro' ? t('app.languageEn') : t('app.languageRo')}
+              >
+                <span className="text-[12px] font-semibold leading-none">{locale === 'ro' ? 'E' : 'R'}</span>
+              </button>
+              <button
+                type="button"
+                onClick={onToggleTheme}
+                className="icon-button"
+                title={theme === 'dark' ? t('shell.lightMode') : t('shell.darkMode')}
+                aria-label={theme === 'dark' ? t('shell.lightMode') : t('shell.darkMode')}
+              >
+                {theme === 'dark' ? <IconSun size={16} stroke={2} aria-hidden="true" /> : <IconMoon size={16} stroke={2} aria-hidden="true" />}
+              </button>
               <button
                 type="button"
                 onClick={() => navigate('/expense-list')}
                 className="icon-button"
-                title="Expense list"
+                title={t('shell.expenseList')}
               >
                 ☰
               </button>
-              <button className="icon-button" type="button" onClick={resetAppCache} title="Reset cache">↺</button>
-              <button className="icon-button" type="button" onClick={onLogout} title="Logout">⎋</button>
+              <button className="icon-button" type="button" onClick={resetAppCache} title={t('shell.resetCache')}>↺</button>
+              <button className="icon-button" type="button" onClick={onLogout} title={t('shell.logout')}>⎋</button>
               <span className="grid h-10 w-10 place-items-center rounded-full bg-[var(--accent)] text-sm font-semibold text-white">
                 {getUserLabel(user).slice(0, 2).toUpperCase()}
               </span>
@@ -194,12 +218,13 @@ function AdminLayout({ children, onLogout, onToggleTheme, theme, user }) {
 }
 
 function UserLayout({ children, onLogout, user }) {
+  const { t, locale, toggleLocale } = useLocale();
   return (
     <div className="app-shell bg-[var(--color-bg)]">
       <div className="mx-auto flex min-h-screen max-w-[1180px] flex-col gap-4 px-4 py-4 pb-24 md:px-5 md:py-5 md:pb-6">
         <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <p className="panel-label">Expenses</p>
+            <p className="panel-label">{t('app.expensesBrand')}</p>
             <h1 className="text-[16px] font-medium text-slate-900">{getUserLabel(user)}</h1>
             <p className="text-[13px] text-slate-500">{user?.email}</p>
           </div>
@@ -212,12 +237,15 @@ function UserLayout({ children, onLogout, user }) {
                   end={item.to === '/'}
                   className={({ isActive }) => `nav-pill ${isActive ? 'nav-pill-active' : 'border border-black/5 bg-white text-slate-600'}`}
                 >
-                  {item.label}
+                  {t(item.labelKey)}
                 </NavLink>
               ))}
             </nav>
-            <span className="tag-chip">{user?.role === 'visitor' ? 'VISITOR' : 'USER'}</span>
-            <button className="icon-button" type="button" onClick={onLogout} title="Logout">⎋</button>
+            <button type="button" onClick={toggleLocale} className="icon-button" title={t('common.language')} aria-label={locale === 'ro' ? t('app.languageEn') : t('app.languageRo')}>
+              <span className="text-[12px] font-semibold leading-none">{locale === 'ro' ? 'E' : 'R'}</span>
+            </button>
+            <span className="tag-chip">{user?.role === 'visitor' ? t('app.visitorTag') : t('app.userTag')}</span>
+            <button className="icon-button" type="button" onClick={onLogout} title={t('shell.logout')}>⎋</button>
           </div>
         </header>
 
@@ -229,7 +257,7 @@ function UserLayout({ children, onLogout, user }) {
   );
 }
 
-export default function App() {
+function AppContent() {
   const { user, loading, login, register, logout } = useAuth();
   const [theme, setTheme] = useState(readStoredTheme);
   usePushNotifications(!!user);
@@ -248,41 +276,42 @@ export default function App() {
   }
 
   if (!user) {
-    return <Login onLogin={login} onRegister={register} />;
+    return <Login onLogin={login} onRegister={register} theme={theme} onToggleTheme={toggleTheme} />;
   }
 
-  const shell = user?.role === 'superadmin'
-    ? <AdminLayout user={user} onLogout={logout} onToggleTheme={toggleTheme} theme={theme} />
-    : <UserLayout user={user} onLogout={logout} />;
+  const ShellComponent = user?.role === 'superadmin' ? AdminLayout : UserLayout;
 
   return (
-    (() => {
-      const ShellComponent = user?.role === 'superadmin' ? AdminLayout : UserLayout;
+    <ShellComponent user={user} onLogout={logout} onToggleTheme={toggleTheme} theme={theme}>
+      <Routes>
+        {user?.role === 'superadmin' ? (
+          <>
+            <Route path="/" element={<Dashboard user={user} />} />
+            <Route path="/expenses" element={<Expenses user={user} />} />
+            <Route path="/categories" element={<Categories />} />
+            <Route path="/users" element={<Users />} />
+            <Route path="/system-logs" element={<SystemLogs />} />
+            <Route path="/platform-errors" element={<PlatformErrors />} />
+            <Route path="/expense-list" element={<ExpenseList />} />
+            <Route path="/settings" element={<Settings />} />
+          </>
+        ) : (
+          <>
+            <Route path="/" element={<Navigate to="/expenses" replace />} />
+            <Route path="/dashboard" element={<Dashboard user={user} />} />
+            <Route path="/expenses" element={<Expenses user={user} />} />
+            <Route path="/categories" element={<Categories user={user} />} />
+          </>
+        )}
+      </Routes>
+    </ShellComponent>
+  );
+}
 
-      return (
-        <ShellComponent user={user} onLogout={logout} onToggleTheme={toggleTheme} theme={theme}>
-          <Routes>
-            {user?.role === 'superadmin' ? (
-              <>
-                <Route path="/" element={<Dashboard user={user} />} />
-                <Route path="/expenses" element={<Expenses user={user} />} />
-                <Route path="/categories" element={<Categories />} />
-                <Route path="/users" element={<Users />} />
-                <Route path="/system-logs" element={<SystemLogs />} />
-                <Route path="/expense-list" element={<ExpenseList />} />
-                <Route path="/settings" element={<Settings />} />
-              </>
-            ) : (
-              <>
-                <Route path="/" element={<Navigate to="/expenses" replace />} />
-                <Route path="/dashboard" element={<Dashboard user={user} />} />
-                <Route path="/expenses" element={<Expenses user={user} />} />
-                <Route path="/categories" element={<Categories />} />
-              </>
-            )}
-          </Routes>
-        </ShellComponent>
-      );
-    })()
+export default function App() {
+  return (
+    <LocaleProvider>
+      <AppContent />
+    </LocaleProvider>
   );
 }

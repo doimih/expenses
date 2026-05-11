@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { IconKey, IconPencil, IconPlus, IconTrash, IconX } from '@tabler/icons-react';
+import { useLocale } from '../i18n/LocaleContext';
 import api from '../services/api';
 
 const emptyNewUser = {
@@ -47,6 +48,7 @@ function PencilIcon() {
 }
 
 export default function Users() {
+  const { locale } = useLocale();
   const [users, setUsers] = useState([]);
   const [passwords, setPasswords] = useState({});
   const [newUser, setNewUser] = useState(emptyNewUser);
@@ -65,7 +67,7 @@ export default function Users() {
   };
 
   useEffect(() => {
-    load().catch((e) => setError(e?.response?.data?.message || 'Nu pot încărca utilizatorii'));
+    load().catch((e) => setError(e?.response?.data?.message || (locale === 'ro' ? 'Nu pot încărca utilizatorii' : 'Could not load users')));
   }, []);
 
   const onChange = (userId, field, value) => {
@@ -87,14 +89,14 @@ export default function Users() {
 
     try {
       await api.put(`/users/${userId}/password`, payload);
-      setMessage('Parola a fost actualizată cu succes.');
+      setMessage(locale === 'ro' ? 'Parola a fost actualizată cu succes.' : 'Password updated successfully.');
       setPasswords((prev) => ({
         ...prev,
         [userId]: { password: '', password_confirmation: '' },
       }));
       setPasswordModalUser(null);
     } catch (e) {
-      setError(e?.response?.data?.message || 'Eroare la actualizarea parolei');
+      setError(e?.response?.data?.message || (locale === 'ro' ? 'Eroare la actualizarea parolei' : 'Could not update password'));
     }
   };
 
@@ -112,17 +114,17 @@ export default function Users() {
         password_confirmation: newUser.password_confirmation,
         role: newUser.role,
       });
-      setMessage('Utilizator creat cu succes.');
+      setMessage(locale === 'ro' ? 'Utilizator creat cu succes.' : 'User created successfully.');
       setNewUser(emptyNewUser);
       setIsCreateModalOpen(false);
       await load();
     } catch (e) {
-      setError(e?.response?.data?.message || 'Eroare la crearea utilizatorului');
+      setError(e?.response?.data?.message || (locale === 'ro' ? 'Eroare la crearea utilizatorului' : 'Could not create user'));
     }
   };
 
   const deleteUser = async (user) => {
-    const confirmed = window.confirm(`Ștergi utilizatorul ${getUserDisplayName(user)}?`);
+    const confirmed = window.confirm(locale === 'ro' ? `Ștergi utilizatorul ${getUserDisplayName(user)}?` : `Delete user ${getUserDisplayName(user)}?`);
 
     if (!confirmed) {
       return;
@@ -134,10 +136,10 @@ export default function Users() {
 
     try {
       await api.delete(`/users/${user.id}`);
-      setMessage('Utilizator șters cu succes.');
+      setMessage(locale === 'ro' ? 'Utilizator șters cu succes.' : 'User deleted successfully.');
       await load();
     } catch (e) {
-      setError(e?.response?.data?.message || 'Eroare la ștergerea utilizatorului');
+      setError(e?.response?.data?.message || (locale === 'ro' ? 'Eroare la ștergerea utilizatorului' : 'Could not delete user'));
     } finally {
       setDeletingUserId(null);
     }
@@ -177,11 +179,11 @@ export default function Users() {
         email: editUserForm.email.trim(),
         role: editUserForm.role,
       });
-      setMessage('Utilizator actualizat cu succes.');
+      setMessage(locale === 'ro' ? 'Utilizator actualizat cu succes.' : 'User updated successfully.');
       setEditingUser(null);
       await load();
     } catch (e) {
-      setError(e?.response?.data?.message || 'Eroare la actualizarea utilizatorului');
+      setError(e?.response?.data?.message || (locale === 'ro' ? 'Eroare la actualizarea utilizatorului' : 'Could not update user'));
     }
   };
 
@@ -189,15 +191,15 @@ export default function Users() {
     <div className="space-y-4">
       <div className="card flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold">Users</h2>
-          <p className="text-sm text-slate-500">Doar superadmin poate modifica parolele utilizatorilor.</p>
+          <h2 className="text-xl font-bold">{locale === 'ro' ? 'Utilizatori' : 'Users'}</h2>
+          <p className="text-sm text-slate-500">{locale === 'ro' ? 'Doar superadmin poate modifica parolele utilizatorilor.' : 'Only superadmin can change user passwords.'}</p>
         </div>
         <button
           className="grid h-10 w-10 place-items-center rounded-full bg-indigo-600 text-xl font-semibold text-white transition hover:bg-indigo-700"
           type="button"
           onClick={() => setIsCreateModalOpen(true)}
-          aria-label="Adaugă utilizator"
-          title="Adaugă utilizator"
+          aria-label={locale === 'ro' ? 'Adaugă utilizator' : 'Add user'}
+          title={locale === 'ro' ? 'Adaugă utilizator' : 'Add user'}
         >
           <IconPlus size={18} stroke={2.2} aria-hidden="true" />
         </button>
@@ -214,8 +216,8 @@ export default function Users() {
                 className="rounded bg-sky-100 p-2 text-sky-700"
                 type="button"
                 onClick={() => openEditModal(user)}
-                aria-label="Editează utilizator"
-                title="Editează utilizator"
+                aria-label={locale === 'ro' ? 'Editează utilizator' : 'Edit user'}
+                title={locale === 'ro' ? 'Editează utilizator' : 'Edit user'}
               >
                 <PencilIcon />
               </button>
@@ -223,8 +225,8 @@ export default function Users() {
                 className="rounded bg-amber-100 p-2 text-amber-700"
                 type="button"
                 onClick={() => openPasswordModal(user)}
-                aria-label="Schimbă parola"
-                title="Schimbă parola"
+                aria-label={locale === 'ro' ? 'Schimbă parola' : 'Change password'}
+                title={locale === 'ro' ? 'Schimbă parola' : 'Change password'}
               >
                 <KeyIcon />
               </button>
@@ -233,17 +235,17 @@ export default function Users() {
                 type="button"
                 onClick={() => deleteUser(user)}
                 disabled={deletingUserId === user.id}
-                aria-label="Șterge utilizator"
-                title="Șterge utilizator"
+                aria-label={locale === 'ro' ? 'Șterge utilizator' : 'Delete user'}
+                title={locale === 'ro' ? 'Șterge utilizator' : 'Delete user'}
               >
                 {deletingUserId === user.id ? '...' : <TrashIcon />}
               </button>
             </div>
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Utilizator #{user.id}</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">{locale === 'ro' ? 'Utilizator' : 'User'} #{user.id}</p>
                 <p className="mt-1 text-lg font-semibold text-slate-900">{getUserDisplayName(user)}</p>
-                <p className="text-sm text-slate-500">Creat la: {new Date(user.created_at).toLocaleDateString('ro-RO', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '.')}</p>
+                <p className="text-sm text-slate-500">{locale === 'ro' ? 'Creat la' : 'Created at'}: {new Date(user.created_at).toLocaleDateString(locale === 'ro' ? 'ro-RO' : 'en-US', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '.')}</p>
               </div>
               <span className={`rounded px-2 py-1 text-xs font-semibold ${roleBadgeClasses[user.role || 'user'] || roleBadgeClasses.user}`}>
                 {roleLabels[user.role || 'user'] || 'User'}
@@ -252,12 +254,12 @@ export default function Users() {
 
             <div className="grid gap-3 sm:grid-cols-3">
               <div className="rounded-xl bg-slate-50 p-3 sm:col-span-2">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Credentiale</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">{locale === 'ro' ? 'Credentiale' : 'Credentials'}</p>
                 <p className="mt-2 text-sm font-medium text-slate-900">{user.email}</p>
-                <p className="mt-1 text-xs text-slate-500">Rol activ: {roleLabels[user.role || 'user'] || 'User'}</p>
+                <p className="mt-1 text-xs text-slate-500">{locale === 'ro' ? 'Rol activ' : 'Active role'}: {roleLabels[user.role || 'user'] || 'User'}</p>
               </div>
               <div className="rounded-xl bg-slate-50 p-3">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Nume complet</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">{locale === 'ro' ? 'Nume complet' : 'Full name'}</p>
                 <p className="mt-2 text-sm font-medium text-slate-900">{getUserDisplayName(user)}</p>
               </div>
             </div>

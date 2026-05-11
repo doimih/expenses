@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Support\LocalizedMessage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -57,7 +58,7 @@ class BackupController extends Controller
             );
         }
 
-        return response()->json(['message' => 'Scheduler salvat.']);
+        return response()->json(['message' => LocalizedMessage::text('Scheduler salvat.', 'Scheduler saved.', $request)]);
     }
 
     public function runNow(): JsonResponse
@@ -68,13 +69,13 @@ class BackupController extends Controller
             ->pluck('value', 'key');
 
         if (!($rows['storage_endpoint'] ?? null) || !($rows['storage_bucket'] ?? null)) {
-            return response()->json(['message' => 'Configurați mai întâi setările S3.'], 422);
+            return response()->json(['message' => LocalizedMessage::text('Configurați mai întâi setările S3.', 'Configure S3 settings first.', request())], 422);
         }
 
         $logId = DB::table('backup_logs')->insertGetId([
             'started_at' => now(),
             'status'     => 'running',
-            'details'    => 'Backup în curs...',
+            'details'    => LocalizedMessage::text('Backup în curs...', 'Backup in progress...', request()),
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -82,8 +83,8 @@ class BackupController extends Controller
         try {
             $secretKey = Crypt::decryptString($rows['storage_secret_key']);
         } catch (\Exception) {
-            DB::table('backup_logs')->where('id', $logId)->update(['status' => 'error', 'details' => 'Secret key invalid.', 'updated_at' => now()]);
-            return response()->json(['message' => 'Secret key invalid.'], 422);
+            DB::table('backup_logs')->where('id', $logId)->update(['status' => 'error', 'details' => LocalizedMessage::text('Secret key invalidă.', 'Invalid secret key.', request()), 'updated_at' => now()]);
+            return response()->json(['message' => LocalizedMessage::text('Secret key invalidă.', 'Invalid secret key.', request())], 422);
         }
 
         // Run pg_dump
@@ -109,7 +110,7 @@ class BackupController extends Controller
         exec($cmd, $output, $exitCode);
 
         if ($exitCode !== 0) {
-            $detail = 'pg_dump failed: ' . implode(' ', $output);
+            $detail = LocalizedMessage::text('pg_dump a eșuat: ', 'pg_dump failed: ', request()) . implode(' ', $output);
             DB::table('backup_logs')->where('id', $logId)->update(['status' => 'error', 'details' => $detail, 'updated_at' => now()]);
             return response()->json(['message' => $detail], 500);
         }
@@ -137,15 +138,15 @@ class BackupController extends Controller
 
             DB::table('backup_logs')->where('id', $logId)->update([
                 'status'    => 'success',
-                'details'   => 'Backup uploaded.',
+                'details'   => LocalizedMessage::text('Backup încărcat.', 'Backup uploaded.', request()),
                 'file_path' => $filename,
                 'updated_at' => now(),
             ]);
 
-            return response()->json(['message' => 'Backup realizat cu succes.']);
+            return response()->json(['message' => LocalizedMessage::text('Backup realizat cu succes.', 'Backup completed successfully.', request())]);
         } catch (\Exception $e) {
             @unlink($localPath);
-            $detail = 'Upload S3 eșuat: ' . $e->getMessage();
+            $detail = LocalizedMessage::text('Încărcarea S3 a eșuat: ', 'S3 upload failed: ', request()) . $e->getMessage();
             DB::table('backup_logs')->where('id', $logId)->update(['status' => 'error', 'details' => $detail, 'updated_at' => now()]);
             return response()->json(['message' => $detail], 500);
         }
@@ -172,7 +173,7 @@ class BackupController extends Controller
     {
         $log = DB::table('backup_logs')->where('id', $id)->where('status', 'success')->first();
         if (!$log || !$log->file_path) {
-            return response()->json(['message' => 'Backup nu a fost găsit sau nu e valid.'], 404);
+            return response()->json(['message' => LocalizedMessage::text('Backup nu a fost găsit sau nu e valid.', 'Backup not found or invalid.', request())], 404);
         }
 
         $rows = DB::table('app_settings')
@@ -182,7 +183,7 @@ class BackupController extends Controller
         try {
             $secretKey = Crypt::decryptString($rows['storage_secret_key']);
         } catch (\Exception) {
-            return response()->json(['message' => 'Secret key invalid.'], 422);
+            return response()->json(['message' => LocalizedMessage::text('Secret key invalidă.', 'Invalid secret key.', request())], 422);
         }
 
         try {
@@ -204,7 +205,7 @@ class BackupController extends Controller
                 'SaveAs' => $localPath,
             ]);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Download S3 eșuat: ' . $e->getMessage()], 500);
+            return response()->json(['message' => LocalizedMessage::text('Descărcarea S3 a eșuat: ', 'S3 download failed: ', request()) . $e->getMessage()], 500);
         }
 
         $dbHost = env('DB_HOST', 'postgres');
@@ -227,9 +228,9 @@ class BackupController extends Controller
         @unlink($localPath);
 
         if ($exitCode !== 0) {
-            return response()->json(['message' => 'Restore eșuat: ' . implode(' ', $output)], 500);
+            return response()->json(['message' => LocalizedMessage::text('Restore a eșuat: ', 'Restore failed: ', request()) . implode(' ', $output)], 500);
         }
 
-        return response()->json(['message' => 'Restore realizat cu succes.']);
+        return response()->json(['message' => LocalizedMessage::text('Restore realizat cu succes.', 'Restore completed successfully.', request())]);
     }
 }

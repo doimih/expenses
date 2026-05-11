@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\PushSubscription;
 use App\Models\User;
+use App\Support\LocalizedMessage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Minishlink\WebPush\Subscription;
@@ -40,7 +41,7 @@ class PushController extends Controller
             ]
         );
 
-        return response()->json(['message' => 'Subscribed']);
+        return response()->json(['message' => LocalizedMessage::text('Abonat', 'Subscribed', $request)]);
     }
 
     public function unsubscribe(Request $request): JsonResponse
@@ -54,7 +55,7 @@ class PushController extends Controller
             ->where('user_id', $request->user()->id)
             ->delete();
 
-        return response()->json(['message' => 'Unsubscribed']);
+        return response()->json(['message' => LocalizedMessage::text('Dezabonat', 'Unsubscribed', $request)]);
     }
 
     public function vapidPublicKey(): JsonResponse

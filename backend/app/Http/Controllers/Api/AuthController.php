@@ -7,6 +7,7 @@ use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Models\EmailSetting;
 use App\Models\User;
+use App\Support\LocalizedMessage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -87,10 +88,14 @@ class AuthController extends Controller
     public function login(LoginRequest $request): JsonResponse
     {
         $data = $request->validated();
-        $user = User::query()->where('email', $data['email'])->first();
+        $identifier = trim((string) $data['email']);
+        $user = User::query()
+            ->where('email', $identifier)
+            ->orWhere('name', $identifier)
+            ->first();
 
         if (! $user || ! Hash::check($data['password'], $user->password)) {
-            return response()->json(['message' => 'Invalid credentials'], 422);
+            return response()->json(['message' => LocalizedMessage::text('Credențiale invalide', 'Invalid credentials', $request)], 422);
         }
 
         $token = $user->createToken($data['device_name'] ?? 'web')->plainTextToken;
@@ -118,13 +123,13 @@ class AuthController extends Controller
     {
         $request->user()->currentAccessToken()->delete();
 
-        return response()->json(['message' => 'Logged out']);
+        return response()->json(['message' => LocalizedMessage::text('Deconectat', 'Logged out', $request)]);
     }
 
     public function logoutAll(Request $request): JsonResponse
     {
         $request->user()->tokens()->delete();
 
-        return response()->json(['message' => 'All tokens revoked']);
+        return response()->json(['message' => LocalizedMessage::text('Toate tokenurile au fost revocate', 'All tokens revoked', $request)]);
     }
 }

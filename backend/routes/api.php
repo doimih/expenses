@@ -36,6 +36,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/reports/monthly', [ReportController::class, 'monthly']);
     Route::get('/reports/admin-overview', [ReportController::class, 'adminOverview']);
+    Route::get('/reports/platform-errors', [ReportController::class, 'platformErrors']);
 
     // Settings - superadmin only
     Route::middleware('superadmin')->group(function () {

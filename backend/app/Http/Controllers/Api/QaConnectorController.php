@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Support\LocalizedMessage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -63,7 +64,7 @@ class QaConnectorController extends Controller
     {
         $row = DB::table('qa_credentials')->where('id', $id)->first();
         if (!$row) {
-            return response()->json(['message' => 'Credential negăsit.'], 404);
+            return response()->json(['message' => LocalizedMessage::text('Credential negăsit.', 'Credential not found.', request())], 404);
         }
 
         $rawKey = 'qa_' . Str::random(32);
@@ -86,7 +87,7 @@ class QaConnectorController extends Controller
     public function destroy(int $id): JsonResponse
     {
         DB::table('qa_credentials')->where('id', $id)->delete();
-        return response()->json(['message' => 'Credential șters.']);
+        return response()->json(['message' => LocalizedMessage::text('Credential șters.', 'Credential deleted.', request())]);
     }
 
     /**
@@ -96,14 +97,14 @@ class QaConnectorController extends Controller
     {
         $key = $request->header('X-QA-API-Key');
         if (!$key) {
-            return response()->json(['message' => 'Missing X-QA-API-Key header.'], 401);
+            return response()->json(['message' => LocalizedMessage::text('Lipsește header-ul X-QA-API-Key.', 'Missing X-QA-API-Key header.', $request)], 401);
         }
 
         $hash = hash('sha256', $key);
         $row  = DB::table('qa_credentials')->where('key_hash', $hash)->first();
 
         if (!$row) {
-            return response()->json(['message' => 'Invalid API key.'], 401);
+            return response()->json(['message' => LocalizedMessage::text('Cheie API invalidă.', 'Invalid API key.', $request)], 401);
         }
 
         DB::table('qa_credentials')->where('id', $row->id)->update(['last_used_at' => now()]);

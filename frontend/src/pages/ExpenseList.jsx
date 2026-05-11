@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { IconPencil, IconTrash, IconX } from '@tabler/icons-react';
+import { useLocale } from '../i18n/LocaleContext';
 import api from '../services/api';
 
-function formatMoney(value) {
-  return `RON ${Number(value || 0).toLocaleString('ro-RO', {
+function formatMoney(value, localeCode = 'ro-RO') {
+  return `RON ${Number(value || 0).toLocaleString(localeCode, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`;
@@ -62,6 +63,7 @@ const monthNames = [
 ];
 
 function EditModal({ expense, categories, onClose, onSaved }) {
+  const { locale } = useLocale();
   const [form, setForm] = useState({
     amount: expense.amount,
     category_id: String(expense.category?.id || ''),
@@ -84,7 +86,7 @@ function EditModal({ expense, categories, onClose, onSaved }) {
       });
       onSaved();
     } catch (err) {
-      setError(err?.response?.data?.message || 'Eroare la salvare.');
+      setError(err?.response?.data?.message || (locale === 'ro' ? 'Eroare la salvare.' : 'Save failed.'));
       setSaving(false);
     }
   };
@@ -96,7 +98,7 @@ function EditModal({ expense, categories, onClose, onSaved }) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-[#d7d8d3] px-5 py-4">
-          <h2 className="text-[17px] font-semibold text-slate-900">Editează cheltuiala</h2>
+          <h2 className="text-[17px] font-semibold text-slate-900">{locale === 'ro' ? 'Editează cheltuiala' : 'Edit expense'}</h2>
           <button type="button" onClick={onClose} className="text-slate-400 hover:text-slate-600">
             <IconX className="h-5 w-5" stroke={2} aria-hidden="true" />
           </button>
@@ -108,7 +110,7 @@ function EditModal({ expense, categories, onClose, onSaved }) {
           )}
 
           <div>
-            <label className="block text-[12px] font-semibold uppercase tracking-[0.07em] text-slate-500 mb-1">Sumă (RON)</label>
+            <label className="block text-[12px] font-semibold uppercase tracking-[0.07em] text-slate-500 mb-1">{locale === 'ro' ? 'Sumă (RON)' : 'Amount (RON)'}</label>
             <input
               className="h-[44px] w-full rounded-lg border border-[#cfd2dc] bg-white px-3 text-[16px] text-slate-900 outline-none focus:border-[#6366f1]"
               type="number"
@@ -121,14 +123,14 @@ function EditModal({ expense, categories, onClose, onSaved }) {
           </div>
 
           <div>
-            <label className="block text-[12px] font-semibold uppercase tracking-[0.07em] text-slate-500 mb-1">Categorie</label>
+            <label className="block text-[12px] font-semibold uppercase tracking-[0.07em] text-slate-500 mb-1">{locale === 'ro' ? 'Categorie' : 'Category'}</label>
             <select
               className="h-[44px] w-full rounded-lg border border-[#cfd2dc] bg-white px-3 text-[15px] text-slate-900 outline-none focus:border-[#6366f1]"
               value={form.category_id}
               onChange={(e) => setForm((p) => ({ ...p, category_id: e.target.value }))}
               required
             >
-              <option value="">Selectează categoria</option>
+              <option value="">{locale === 'ro' ? 'Selectează categoria' : 'Select category'}</option>
               {categories.map((cat) => (
                 <option key={cat.id} value={String(cat.id)}>{cat.name}</option>
               ))}
@@ -136,18 +138,18 @@ function EditModal({ expense, categories, onClose, onSaved }) {
           </div>
 
           <div>
-            <label className="block text-[12px] font-semibold uppercase tracking-[0.07em] text-slate-500 mb-1">Descriere</label>
+            <label className="block text-[12px] font-semibold uppercase tracking-[0.07em] text-slate-500 mb-1">{locale === 'ro' ? 'Descriere' : 'Description'}</label>
             <input
               className="h-[44px] w-full rounded-lg border border-[#cfd2dc] bg-white px-3 text-[15px] text-slate-900 outline-none focus:border-[#6366f1]"
               type="text"
               value={form.description}
               onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
-              placeholder="Descriere cheltuială..."
+              placeholder={locale === 'ro' ? 'Descriere cheltuială...' : 'Expense description...'}
             />
           </div>
 
           <div>
-            <label className="block text-[12px] font-semibold uppercase tracking-[0.07em] text-slate-500 mb-1">Dată</label>
+            <label className="block text-[12px] font-semibold uppercase tracking-[0.07em] text-slate-500 mb-1">{locale === 'ro' ? 'Dată' : 'Date'}</label>
             <input
               className="h-[44px] w-full rounded-lg border border-[#cfd2dc] bg-white px-3 text-[15px] text-slate-900 outline-none focus:border-[#6366f1]"
               type="text"
@@ -163,14 +165,14 @@ function EditModal({ expense, categories, onClose, onSaved }) {
               onClick={onClose}
               className="rounded-xl border border-[#cfd2dc] bg-white px-4 py-2 text-[14px] font-medium text-slate-700 hover:bg-[#f1f3ef]"
             >
-              Anulează
+              {locale === 'ro' ? 'Anulează' : 'Cancel'}
             </button>
             <button
               type="submit"
               disabled={saving}
               className="rounded-xl border border-[#2f63f3] bg-[#3a6bff] px-5 py-2 text-[14px] font-semibold text-white hover:bg-[#2f63f3] disabled:opacity-60"
             >
-              {saving ? 'Se salvează...' : 'Salvează'}
+              {saving ? (locale === 'ro' ? 'Se salvează...' : 'Saving...') : (locale === 'ro' ? 'Salvează' : 'Save')}
             </button>
           </div>
         </form>
@@ -180,6 +182,8 @@ function EditModal({ expense, categories, onClose, onSaved }) {
 }
 
 export default function ExpenseList({ user }) {
+  const { locale } = useLocale();
+  const numberLocale = locale === 'ro' ? 'ro-RO' : 'en-US';
   const [expenses, setExpenses] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -196,6 +200,9 @@ export default function ExpenseList({ user }) {
   const tableGridClass = isReadOnly
     ? 'md:grid-cols-[minmax(0,260px)_110px_150px]'
     : 'md:grid-cols-[minmax(0,260px)_110px_150px_1fr]';
+  const monthNames = locale === 'ro'
+    ? ['Ianuarie', 'Februarie', 'Martie', 'Aprilie', 'Mai', 'Iunie', 'Iulie', 'August', 'Septembrie', 'Octombrie', 'Noiembrie', 'Decembrie']
+    : ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
   const load = async () => {
     setLoading(true);
@@ -290,7 +297,7 @@ export default function ExpenseList({ user }) {
         <div className="border-b border-black/5 px-5 py-4">
           <div>
             <div className="flex flex-wrap items-center gap-2">
-              <h3 className="panel-title">Lista cheltuieli</h3>
+              <h3 className="panel-title">{locale === 'ro' ? 'Lista cheltuieli' : 'Expense list'}</h3>
               <select
                 className="expense-filter-select h-[34px] rounded-lg border px-3 text-[13px] font-semibold outline-none"
                 value={year}
@@ -301,7 +308,7 @@ export default function ExpenseList({ user }) {
                 ))}
               </select>
             </div>
-            <p className="mt-1 text-[12px] text-slate-500">Filtrare după an, lună și descriere.</p>
+            <p className="mt-1 text-[12px] text-slate-500">{locale === 'ro' ? 'Filtrare după an, lună și descriere.' : 'Filter by year, month, and description.'}</p>
 
             <div className="-mx-1 mt-3 overflow-x-auto pb-1">
               <div className="flex min-w-max items-center gap-2 px-1">
@@ -310,7 +317,7 @@ export default function ExpenseList({ user }) {
                 onClick={() => setMonth(0)}
                 className={`expense-month-chip rounded-lg border px-3 py-2 text-[12px] font-semibold leading-none transition ${month === 0 ? 'expense-month-chip-active' : ''}`}
               >
-                Toate
+                {locale === 'ro' ? 'Toate' : 'All'}
               </button>
               {monthNames.map((name, index) => {
                 const value = index + 1;
@@ -334,32 +341,32 @@ export default function ExpenseList({ user }) {
             <input
               className="input w-full sm:max-w-[340px]"
               type="text"
-              placeholder="Caută descriere..."
+              placeholder={locale === 'ro' ? 'Caută descriere...' : 'Search description...'}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
 
             <span className="w-fit rounded-xl bg-[var(--accent-soft)] px-3 py-2 text-[13px] font-medium text-[var(--accent)]">
-              Total: {formatMoney(total)}
+              {locale === 'ro' ? 'Total' : 'Total'}: {formatMoney(total, numberLocale)}
             </span>
           </div>
         </div>
 
         {/* Table header */}
         <div className={`hidden md:grid ${tableGridClass} items-center gap-3 border-b border-black/5 px-5 py-3 text-[11px] font-medium uppercase tracking-[0.14em] text-slate-500`}>
-          <span>Cheltuială</span>
-          <span>Sumă</span>
-          <span>Categorie</span>
-          {!isReadOnly && <span className="text-right">Acțiuni</span>}
+          <span>{locale === 'ro' ? 'Cheltuială' : 'Expense'}</span>
+          <span>{locale === 'ro' ? 'Sumă' : 'Amount'}</span>
+          <span>{locale === 'ro' ? 'Categorie' : 'Category'}</span>
+          {!isReadOnly && <span className="text-right">{locale === 'ro' ? 'Acțiuni' : 'Actions'}</span>}
         </div>
 
         {/* Rows */}
         <div>
           {loading ? (
-            <div className="px-5 py-8 text-[14px] text-slate-500">Se încarcă...</div>
+            <div className="px-5 py-8 text-[14px] text-slate-500">{locale === 'ro' ? 'Se încarcă...' : 'Loading...'}</div>
           ) : filtered.length === 0 ? (
             <div className="px-5 py-8 text-[14px] text-slate-500">
-              Nu există cheltuieli pentru filtrele selectate.
+              {locale === 'ro' ? 'Nu există cheltuieli pentru filtrele selectate.' : 'No expenses match the selected filters.'}
             </div>
           ) : (
             paginated.map((expense) => (
@@ -372,12 +379,12 @@ export default function ExpenseList({ user }) {
                     <div className="flex items-start justify-between gap-3 md:block">
                       <div className="min-w-0">
                         <p className="truncate font-semibold text-slate-900 md:font-medium">
-                          {expense.description || `${expense.category?.name || 'Cheltuială'}`}
+                          {expense.description || `${expense.category?.name || (locale === 'ro' ? 'Cheltuială' : 'Expense')}`}
                         </p>
                         <p className="mt-0.5 text-[12px] text-slate-400">{formatDate(expense.date)}</p>
                       </div>
                       <span className="shrink-0 text-right font-semibold text-slate-900 md:hidden">
-                        {formatMoney(expense.amount)}
+                        {formatMoney(expense.amount, numberLocale)}
                       </span>
                     </div>
 
@@ -398,7 +405,7 @@ export default function ExpenseList({ user }) {
                         <div className="flex shrink-0 items-center gap-1">
                           <button
                             type="button"
-                            title="Editează"
+                            title={locale === 'ro' ? 'Editează' : 'Edit'}
                             onClick={() => setEditingExpense(expense)}
                             className="rounded-lg p-1.5 text-slate-400 hover:bg-[var(--accent-soft)] hover:text-[var(--accent)] transition"
                           >
@@ -407,7 +414,7 @@ export default function ExpenseList({ user }) {
 
                           <button
                             type="button"
-                            title="Șterge"
+                            title={locale === 'ro' ? 'Șterge' : 'Delete'}
                             disabled={deletingId === expense.id}
                             onClick={() => handleDelete(expense.id)}
                             className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-500 transition disabled:opacity-40"
@@ -420,7 +427,7 @@ export default function ExpenseList({ user }) {
                   </div>
 
                   <span className="hidden font-semibold text-slate-900 md:inline">
-                    {formatMoney(expense.amount)}
+                    {formatMoney(expense.amount, numberLocale)}
                   </span>
 
                   <div className="hidden min-w-0 items-center gap-1.5 md:flex">
@@ -439,7 +446,7 @@ export default function ExpenseList({ user }) {
                     <div className="hidden items-center justify-end gap-1 md:flex">
                     <button
                       type="button"
-                      title="Editează"
+                      title={locale === 'ro' ? 'Editează' : 'Edit'}
                       onClick={() => setEditingExpense(expense)}
                       className="rounded-lg p-1.5 text-slate-400 hover:bg-[var(--accent-soft)] hover:text-[var(--accent)] transition"
                     >
@@ -448,7 +455,7 @@ export default function ExpenseList({ user }) {
 
                     <button
                       type="button"
-                      title="Șterge"
+                      title={locale === 'ro' ? 'Șterge' : 'Delete'}
                       disabled={deletingId === expense.id}
                       onClick={() => handleDelete(expense.id)}
                       className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-500 transition disabled:opacity-40"
@@ -467,7 +474,7 @@ export default function ExpenseList({ user }) {
         {totalPages > 1 && (
           <div className="flex items-center justify-between border-t border-black/5 px-5 py-3">
             <span className="text-[13px] text-slate-500">
-              {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)} din {filtered.length}
+              {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)} {locale === 'ro' ? 'din' : 'of'} {filtered.length}
             </span>
             <div className="flex items-center gap-1">
               <button
@@ -476,7 +483,7 @@ export default function ExpenseList({ user }) {
                 onClick={() => setPage((p) => p - 1)}
                 className="rounded-lg border border-black/10 bg-white px-3 py-1.5 text-[13px] font-medium text-slate-700 hover:bg-stone-50 disabled:opacity-40"
               >
-                ← Anterior
+                {locale === 'ro' ? '← Anterior' : '← Previous'}
               </button>
               {Array.from({ length: totalPages }, (_, i) => i + 1)
                 .filter((p) => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
@@ -509,7 +516,7 @@ export default function ExpenseList({ user }) {
                 onClick={() => setPage((p) => p + 1)}
                 className="rounded-lg border border-black/10 bg-white px-3 py-1.5 text-[13px] font-medium text-slate-700 hover:bg-stone-50 disabled:opacity-40"
               >
-                Următor →
+                {locale === 'ro' ? 'Următor →' : 'Next →'}
               </button>
             </div>
           </div>

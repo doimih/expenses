@@ -8,6 +8,7 @@ use App\Http\Requests\ToggleSuperadminRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Http\Requests\UpdateUserPasswordRequest;
 use App\Models\User;
+use App\Support\LocalizedMessage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -16,7 +17,7 @@ class UserController extends Controller
 {
     private function ensureSuperAdmin(Request $request): void
     {
-        abort_unless($request->user()?->isSuperadmin(), 403, 'Only superadmin can manage users.');
+        abort_unless($request->user()?->isSuperadmin(), 403, LocalizedMessage::text('Doar superadmin poate gestiona utilizatorii.', 'Only superadmin can manage users.', $request));
     }
 
     public function index(Request $request): JsonResponse
@@ -70,7 +71,7 @@ class UserController extends Controller
         $role = $data['role'];
 
         if ((int) $request->user()->id === (int) $user->id && $role !== User::ROLE_SUPERADMIN) {
-            return response()->json(['message' => 'You cannot remove your own superadmin role.'], 422);
+            return response()->json(['message' => LocalizedMessage::text('Nu îți poți elimina propriul rol de superadmin.', 'You cannot remove your own superadmin role.', $request)], 422);
         }
 
         $user->update([
@@ -83,7 +84,7 @@ class UserController extends Controller
         ]);
 
         return response()->json([
-            'message' => 'User updated successfully',
+            'message' => LocalizedMessage::text('Utilizator actualizat cu succes.', 'User updated successfully.', $request),
             'user' => [
                 'id' => $user->id,
                 'first_name' => $user->first_name,
@@ -106,7 +107,7 @@ class UserController extends Controller
         ]);
 
         return response()->json([
-            'message' => 'Password updated successfully',
+            'message' => LocalizedMessage::text('Parola a fost actualizată cu succes.', 'Password updated successfully.', $request),
             'user' => [
                 'id' => $user->id,
                 'first_name' => $user->first_name,
@@ -123,14 +124,14 @@ class UserController extends Controller
         $this->ensureSuperAdmin($request);
 
         if ((int) $request->user()->id === (int) $user->id) {
-            return response()->json(['message' => 'You cannot delete your own account.'], 422);
+            return response()->json(['message' => LocalizedMessage::text('Nu îți poți șterge propriul cont.', 'You cannot delete your own account.', $request)], 422);
         }
 
         $user->tokens()->delete();
         $user->delete();
 
         return response()->json([
-            'message' => 'User deleted successfully',
+            'message' => LocalizedMessage::text('Utilizator șters cu succes.', 'User deleted successfully.', $request),
         ]);
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Support\LocalizedMessage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -71,7 +72,7 @@ class StorageSettingsController extends Controller
             );
         }
 
-        return response()->json(['message' => 'Setările au fost salvate.']);
+        return response()->json(['message' => LocalizedMessage::text('Setările au fost salvate.', 'Settings saved.', $request)]);
     }
 
     public function testConnection(Request $request): JsonResponse
@@ -104,13 +105,13 @@ class StorageSettingsController extends Controller
                 try {
                     $secretKey = Crypt::decryptString($secretKeyEnc);
                 } catch (\Exception) {
-                    return response()->json(['message' => 'Secret key invalid/corupt.'], 422);
+                    return response()->json(['message' => LocalizedMessage::text('Secret key invalidă sau coruptă.', 'Secret key invalid or corrupted.', $request)], 422);
                 }
             }
         }
 
         if (!$endpoint || !$bucket || !$accessKey || !$secretKey) {
-            return response()->json(['message' => 'Configurația S3 este incompletă. Salvează setările înainte de test.'], 422);
+            return response()->json(['message' => LocalizedMessage::text('Configurația S3 este incompletă. Salvează setările înainte de test.', 'S3 configuration is incomplete. Save settings before testing.', $request)], 422);
         }
 
         try {
@@ -127,12 +128,12 @@ class StorageSettingsController extends Controller
 
             $s3->headBucket(['Bucket' => $bucket]);
 
-            return response()->json(['message' => 'Conexiune reușită! Bucket-ul există și este accesibil.']);
+            return response()->json(['message' => LocalizedMessage::text('Conexiune reușită! Bucket-ul există și este accesibil.', 'Connection successful! The bucket exists and is accessible.', $request)]);
         } catch (\Aws\Exception\AwsException $e) {
             $errorMsg = $e->getAwsErrorMessage() ?: $e->getMessage();
-            return response()->json(['message' => 'Eroare S3: ' . $errorMsg], 422);
+            return response()->json(['message' => LocalizedMessage::text('Eroare S3: ', 'S3 error: ', $request) . $errorMsg], 422);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Eroare: ' . $e->getMessage()], 422);
+            return response()->json(['message' => LocalizedMessage::text('Eroare: ', 'Error: ', $request) . $e->getMessage()], 422);
         }
     }
 }
